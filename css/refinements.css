@@ -1,0 +1,43 @@
+.brand-logo{width:42px;height:42px;object-fit:contain;flex:0 0 auto}.footer .brand-logo{width:48px;height:48px}.nav-booking{min-width:136px;min-height:42px;padding:10px 18px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;line-height:1.15;font-size:12px}
+/* The RTL nav reordering that used to live here (direction:ltr + explicit
+   order/flex on each child) is unnecessary: the grid in global.css places its
+   columns along the inline axis, so the brand, nav and actions mirror on their
+   own when dir flips. */
+/* The hero's two background pseudo-elements that used to live here have been
+   replaced by real layers inside .hero-stage, so the photograph can drift with
+   the pointer independently of the wash over it. See experience.css. */
+.about-intro{padding-top:70px}.about-intro-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:72px;align-items:start}.about-profile h1{font-size:46px;margin:18px 0 14px}.about-profile>p{max-width:610px;color:var(--muted);line-height:1.75}.about-clinic{width:100%;height:320px;object-fit:cover;border-radius:18px;margin-top:30px}.about-expertise h2{font-size:28px;color:var(--gold-dark);margin:5px 0 20px}.about-expertise blockquote{margin:0 0 52px;padding-inline-start:22px;border-inline-start:2px solid var(--gold);color:#5f5954;line-height:1.65}.about-expertise>h3{font-size:12px;letter-spacing:.12em;margin:0 0 30px}.about-timeline{border-inline-start:1px solid #d9c9ac;margin-inline-start:4px;padding-inline-start:28px}.about-timeline article{position:relative;padding:0 0 30px}.about-timeline article:last-child{padding-bottom:0}.timeline-dot{position:absolute;inset-inline-start:-35px;top:2px;width:13px;height:13px;border:2px solid var(--gold-dark);background:var(--ivory);border-radius:50%}.about-timeline b{display:block;color:var(--gold);font-size:13px;margin-bottom:5px}.about-timeline strong{display:block;font-size:18px;font-weight:500}.about-timeline small{display:block;color:#999;margin-top:3px}.about-journey{padding-top:55px}.about-section-title{text-align:center;font-size:42px;margin:0 0 60px}.about-section-title:after{content:"";display:block;width:76px;height:3px;background:var(--gold-dark);margin:18px auto 0}.journey-feature{display:grid;grid-template-columns:320px 1fr;gap:28px}.doctor-quote{margin:0;background:#866321;color:#fff;border-radius:24px;padding:48px 36px;min-height:340px;display:flex;flex-direction:column}.doctor-quote>span{font-size:40px;line-height:.7}.doctor-quote strong{font-family:var(--font-heading);font-size:22px;line-height:1.55;margin:auto 0}.doctor-quote small{align-self:flex-end;font-style:italic}.education-card{background:#fff;border-radius:24px;padding:32px;display:grid;grid-template-columns:220px 1fr;gap:32px;align-items:center;box-shadow:var(--shadow)}.education-card img{width:100%;height:225px;object-fit:cover;border-radius:14px;filter:grayscale(1)}.education-card>div>span{color:var(--gold-dark);font-size:13px}.education-card h3{font-size:28px;margin:8px 0 15px}.education-card p{line-height:1.55;margin:0}.education-card ul{padding-inline-start:18px;color:#756e68}.education-card li::marker{color:var(--gold-dark)}.about-cards{display:grid;grid-template-columns:2fr 1fr;gap:28px;margin-top:28px}.contribution-card,.award-card{border-radius:24px;padding:34px;min-height:220px}.contribution-card{background:#eae1da;position:relative;overflow:hidden}.contribution-card:after{content:"";position:absolute;width:150px;height:150px;border:18px solid rgba(255,255,255,.35);border-radius:45px;transform:rotate(12deg);inset-inline-start:-75px;bottom:-80px}.award-card{background:#fff;box-shadow:var(--shadow)}.contribution-card h3,.award-card h3{color:var(--gold-dark);font-size:24px;margin:0 0 20px}.award-icon{display:block;width:34px;height:34px;object-fit:contain;margin-bottom:16px}.about-cards p{line-height:1.6;color:#5f5954}html[lang=ar] .doctor-quote strong{font-size:25px}@media(max-width:900px){.about-intro-grid{grid-template-columns:1fr;gap:48px}.journey-feature{grid-template-columns:1fr}.doctor-quote{min-height:280px}.education-card{grid-template-columns:190px 1fr}.about-cards{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.brand-logo{width:36px;height:36px}.about-intro{padding-top:42px}.about-profile h1{font-size:36px}.about-clinic{height:240px}.about-section-title{font-size:34px;margin-bottom:36px}.education-card{grid-template-columns:1fr;padding:24px}.education-card img{height:190px}.about-cards{grid-template-columns:1fr}.doctor-quote{padding:34px 28px}.about-expertise blockquote{margin-bottom:36px}}
+.ui-icon{width:1.25em;height:1.25em;display:block;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.compare-handle .ui-icon{width:22px;height:22px;margin:auto}
+.icon-badge > img,
+.contact-card-icon > img {
+  display: block;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.service-svg-icon{width:25px!important;height:25px!important}
+.contact-card-icon>img{width:20px;height:20px}
+.booking-icon{flex:0 0 42px;margin:0}
+.booking-icon>img{width:20px;height:20px}
+.booking-icon>.booking-icon-assessment{width:19px;height:19px}
+.booking-icon>.booking-icon-goals{width:20px;height:20px}
+.booking-icon>.booking-icon-plan{width:18px;height:20px}
+.booking-icon>.booking-icon-questions{width:19px;height:21px}
+
+.step .icon-badge > img {
+  width: 20px;
+  height: 20px;
+}
+
+.socials a{width:40px;height:40px;border:0}.socials a img{display:block;width:40px;height:40px;object-fit:contain}.footer-contact li{display:flex;align-items:flex-start;gap:11px;line-height:1.55}.footer-contact .footer-contact-icon{width:17px;height:20px;flex:0 0 17px;object-fit:contain;margin-top:1px}.footer-contact .footer-whatsapp-icon{width:19px;height:20px;flex-basis:19px;margin-inline-start:-1px;margin-inline-end:-1px}.footer-contact .footer-location-icon{width:13px;flex-basis:13px;margin-inline-start:2px;margin-inline-end:2px}.footer-contact a{direction:ltr;unicode-bidi:isolate}
+
+/* Arabic sits the hero copy slightly further from the edge to balance against
+   the mirrored background image. Logical, so it nudges the correct way. */
+@media (min-width:901px) {
+  html[lang=ar] .hero-copy { transform: translateX(-36px); }
+}
+
+/* The mobile [dir=rtl] .nav-shell reordering that used to live here is gone for
+   the same reason as the desktop one: the grid mirrors on its own. */

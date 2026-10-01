@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title data-i18n="booking.docTitle">د. علاء حجاج — احجز استشارتك</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/refinements.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/experience.css">
+  <script src="js/i18n-data.js"></script>
+  <script src="js/i18n.js"></script>
+</head>
+
+<body data-page="booking">
+  <div id="site-header"></div>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="container">
+        <h1 class="heading" data-anim data-i18n="booking.h1"></h1>
+        <p data-anim data-i18n="booking.lead"></p>
+      </div>
+    </section>
+
+    <section class="section booking-section">
+      <div class="container two-col booking-layout">
+        <div>
+          <!-- Photograph and "what to expect" are one card, matching the form
+               panel opposite: same corner radius, shadow and padding rhythm. -->
+          <div class="panel booking-intro" data-anim>
+            <img class="clinic-photo" src="assets/clinic-wide.jpg" alt="" data-i18n-attr="alt:booking.clinicAlt">
+
+            <div class="expect">
+              <h2 class="heading" data-i18n="booking.expectTitle"></h2>
+              <ul>
+                <li>
+                  <span class="icon-badge booking-icon">
+                    <img class="booking-icon-assessment" src="assets/booking-assessment.svg" alt="" aria-hidden="true">
+                  </span>
+                  <span data-i18n="booking.expect1"></span>
+                </li>
+                <li>
+                  <span class="icon-badge booking-icon">
+                    <img class="booking-icon-goals" src="assets/booking-goals.svg" alt="" aria-hidden="true">
+                  </span>
+                  <span data-i18n="booking.expect2"></span>
+                </li>
+                <li>
+                  <span class="icon-badge booking-icon">
+                    <img class="booking-icon-plan" src="assets/booking-plan.svg" alt="" aria-hidden="true">
+                  </span>
+                  <span data-i18n="booking.expect3"></span>
+                </li>
+                <li>
+                  <span class="icon-badge booking-icon">
+                    <img class="booking-icon-questions" src="assets/booking-questions.svg" alt="" aria-hidden="true">
+                  </span>
+                  <span data-i18n="booking.expect4"></span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" data-anim>
+          <form>
+            <div class="form-grid">
+              <div class="field full">
+                <label for="booking-name" data-i18n="form.name"></label>
+                <input id="booking-name" name="name" type="text" required autocomplete="name"
+                  data-i18n-attr="placeholder:form.namePlaceholder">
+              </div>
+              <div class="field">
+                <label for="booking-email" data-i18n="form.email"></label>
+                <input id="booking-email" name="email" type="email" required autocomplete="email" dir="ltr"
+                  data-i18n-attr="placeholder:form.emailPlaceholder">
+              </div>
+              <div class="field">
+                <label for="booking-phone" data-i18n="form.phone"></label>
+                <input id="booking-phone" name="phone" type="tel" required autocomplete="tel" dir="ltr"
+                  data-i18n-attr="placeholder:form.phonePlaceholder">
+              </div>
+              <div class="field">
+                <label for="booking-date" data-i18n="form.date"></label>
+                <input id="booking-date" name="date" type="date">
+              </div>
+              <div class="field">
+                <label for="booking-time" data-i18n="form.time"></label>
+                <input id="booking-time" name="time" type="time">
+              </div>
+              <div class="field full">
+                <label for="booking-service" data-i18n="form.help"></label>
+                <select id="booking-service" name="service">
+                  <option value="veneers" data-i18n="form.optVeneers"></option>
+                  <option value="whitening" data-i18n="form.optWhitening"></option>
+                  <option value="smile-design" data-i18n="form.optSmileDesign"></option>
+                  <option value="inquiry" data-i18n="form.optInquiry"></option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="booking-notes" data-i18n="form.notes"></label>
+                <textarea id="booking-notes" name="notes"
+                  data-i18n-attr="placeholder:form.notesPlaceholder"></textarea>
+              </div>
+            </div>
+            <button class="btn btn-primary form-submit" type="submit" data-i18n="booking.submit"></button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Below both frames, not inside one of them, so the two cards are the
+           only things in the row and finish on the same line. -->
+      <div class="container trust-row" data-anim>
+        <span><span aria-hidden="true">⌾</span> <span data-i18n="booking.trust1"></span></span>
+        <span><span aria-hidden="true">◷</span> <span data-i18n="booking.trust2"></span></span>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="js/icons.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/forms.js"></script>
+  <script src="js/slider.js"></script>
+  <script src="js/portfolio-filter.js"></script>
+  <script src="js/fields.js"></script>
+  <script src="js/motion.js"></script>
+  <script src="js/reveal.js"></script>
+  <script src="js/scroll.js"></script>
+</body>
+
+</html>

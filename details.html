@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title data-i18n="details.docTitle">د. علاء حجاج — تفاصيل الحالة</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/refinements.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/experience.css">
+  <script src="js/i18n-data.js"></script>
+  <script src="js/i18n.js"></script>
+</head>
+
+<body data-page="details">
+  <div id="site-header"></div>
+
+  <main id="main">
+    <section class="details">
+      <div class="container">
+        <a class="back" href="works.html" data-anim data-i18n="details.back"></a>
+        <h1 class="heading" data-anim data-i18n="details.h1"></h1>
+
+        <div class="overview">
+          <article data-anim>
+            <h2 class="heading" data-i18n="details.overviewTitle"></h2>
+            <p data-i18n="details.overview1"></p>
+            <p data-i18n="details.overview2"></p>
+          </article>
+
+          <div class="compare" style="--position:50%" data-compare data-anim>
+            <img class="compare-before" src="assets/detail-before.jpg" alt=""
+              data-i18n-attr="alt:details.altBefore">
+            <div class="compare-after-wrap">
+              <img class="compare-after" src="assets/detail-after.jpg" alt=""
+                data-i18n-attr="alt:details.altAfter">
+            </div>
+            <span class="before" data-i18n="compare.before"></span>
+            <span class="after" data-i18n="compare.after"></span>
+            <button class="compare-handle" type="button" role="slider" aria-valuemin="0" aria-valuemax="100"
+              aria-valuenow="50" aria-orientation="horizontal" data-i18n-attr="aria-label:compare.aria">
+              <span class="compare-grip" aria-hidden="true">
+                <span class="compare-step" data-step="after">
+                  <svg class="ui-icon" focusable="false"><use href="#icon-chevron-start"></use></svg>
+                </span>
+                <span class="compare-step" data-step="before">
+                  <svg class="ui-icon" focusable="false"><use href="#icon-chevron-end"></use></svg>
+                </span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat" data-anim>
+            <span data-i18n="details.stat1Label"></span>
+            <strong data-i18n="details.stat1Value"></strong>
+          </div>
+          <div class="stat" data-anim>
+            <span data-i18n="details.stat2Label"></span>
+            <strong data-i18n="details.stat2Value"></strong>
+          </div>
+          <div class="stat" data-anim>
+            <span data-i18n="details.stat3Label"></span>
+            <strong data-i18n="details.stat3Value"></strong>
+          </div>
+        </div>
+
+        <div class="journey">
+          <h2 class="heading" data-anim data-i18n="details.journeyTitle"></h2>
+          <div class="steps">
+            <div class="step" data-anim>
+              <span class="icon-badge"><img src="assets/step-consultation.svg" alt="" aria-hidden="true"></span>
+              <b>01</b>
+              <strong data-i18n="step.1.title"></strong>
+              <span data-i18n="step.1.body"></span>
+            </div>
+            <div class="step" data-anim>
+              <span class="icon-badge"><img src="assets/step-design.svg" alt="" aria-hidden="true"></span>
+              <b>02</b>
+              <strong data-i18n="step.2.title"></strong>
+              <span data-i18n="step.2.body"></span>
+            </div>
+            <div class="step" data-anim>
+              <span class="icon-badge"><img src="assets/step-preparation.svg" alt="" aria-hidden="true"></span>
+              <b>03</b>
+              <strong data-i18n="step.3.title"></strong>
+              <span data-i18n="step.3.body"></span>
+            </div>
+            <div class="step" data-anim>
+              <span class="icon-badge"><img src="assets/step-placement.svg" alt="" aria-hidden="true"></span>
+              <b>04</b>
+              <strong data-i18n="step.4.title"></strong>
+              <span data-i18n="step.4.body"></span>
+            </div>
+            <div class="step" data-anim>
+              <span class="icon-badge"><img src="assets/step-result.svg" alt="" aria-hidden="true"></span>
+              <b>05</b>
+              <strong data-i18n="step.5.title"></strong>
+              <span data-i18n="step.5.body"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="details-cta">
+      <div class="container cta-band" data-anim>
+        <div>
+          <h2 class="heading" data-i18n="details.ctaTitle"></h2>
+          <p data-i18n="details.ctaBody"></p>
+        </div>
+        <a class="btn btn-glow" href="booking.html" data-i18n="details.ctaBtn"></a>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="js/icons.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/forms.js"></script>
+  <script src="js/slider.js"></script>
+  <script src="js/portfolio-filter.js"></script>
+  <script src="js/fields.js"></script>
+  <script src="js/motion.js"></script>
+  <script src="js/reveal.js"></script>
+  <script src="js/scroll.js"></script>
+</body>
+
+</html>

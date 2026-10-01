@@ -1,0 +1,916 @@
+/* Motion and interaction states.
+ *
+ * Kept in one file so the timing vocabulary stays consistent and every
+ * :hover / :active / :focus-visible rule is reviewable in one place.
+ *
+ * Rules of the house:
+ *   - interaction feedback (hover, active, focus) stays at or under 300ms;
+ *     entrance choreography (scroll reveals, hero intro) may run to ~900ms,
+ *     and ambient loops (floating) run slowly enough to read as drift
+ *   - nothing animates a property that reflows (width, height, margin,
+ *     letter-spacing); transform / translate / scale / opacity / filter only
+ *   - hover lift uses the individual `translate` property rather than
+ *     `transform`, so it composes with the ambient float keyframes instead of
+ *     being swallowed by them
+ *   - :focus-visible, never bare :focus, so mouse clicks do not ring
+ *   - everything collapses under prefers-reduced-motion (bottom of file)
+ */
+
+:root {
+  --ease: cubic-bezier(.4, 0, .2, 1);
+  --ease-out: cubic-bezier(.22, .61, .36, 1);
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --dur-fast: 150ms;
+  --dur: 250ms;
+  --dur-slow: 300ms;
+  --dur-reveal: 820ms;
+  /* Panels that change size. Slow enough that the widths visibly travel rather
+     than snapping - the movement is the point - and symmetric, so opening and
+     closing feel the same. */
+  --dur-panel: 620ms;
+  --ease-panel: cubic-bezier(.4, 0, .2, 1);
+  /* Sign of the inline axis: flips the direction of every logical slide. */
+  --dir: 1;
+}
+[dir=rtl] {
+  --dir: -1;
+}
+
+/* ============================================================
+   Scroll reveals - brief S10
+   Elements opt in with a bare data-anim attribute in the markup;
+   reveal.js fills in a randomly chosen effect name and a stagger
+   delay on every page load, so no two visits animate identically.
+   Gated on html.has-js so content is never hidden without JS.
+   ============================================================ */
+/* `transition` is one property: whatever this sets REPLACES what the element
+   declared for itself, and most reveal targets are also cards with a hover
+   lift. --anim-extra is how they get both - each such element puts its own
+   transition list in that variable and it is spliced in here. */
+.has-js [data-anim] {
+  opacity: 0;
+  transition:
+    opacity var(--dur-reveal) var(--ease-out),
+    transform var(--dur-reveal) var(--ease-out),
+    filter var(--dur-reveal) var(--ease-out),
+    var(--anim-extra, opacity 0s);
+  transition-delay: var(--anim-delay, 0ms);
+}
+.has-js [data-anim].is-in {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+/* The effect pool. "start" / "end" are logical: they slide in from the
+   reading edge, so they mirror with the document direction. */
+.has-js [data-anim=up]      { transform: translate3d(0, 48px, 0); }
+.has-js [data-anim=down]    { transform: translate3d(0, -38px, 0); }
+.has-js [data-anim=start]   { transform: translate3d(calc(-70px * var(--dir, 1)), 0, 0); }
+.has-js [data-anim=end]     { transform: translate3d(calc(70px * var(--dir, 1)), 0, 0); }
+.has-js [data-anim=zoom]    { transform: scale(.84); }
+.has-js [data-anim=settle]  { transform: scale(1.1); }
+.has-js [data-anim=rise]    { transform: translate3d(0, 62px, 0) scale(.93); }
+.has-js [data-anim=flip]    { transform: perspective(1000px) rotateX(-26deg) translate3d(0, 40px, 0); transform-origin: 50% 100%; }
+.has-js [data-anim=swing]   { transform: perspective(1000px) rotateY(calc(24deg * var(--dir, 1))) translate3d(calc(52px * var(--dir, 1)), 0, 0); }
+.has-js [data-anim=blur]    { transform: translate3d(0, 26px, 0); filter: blur(14px); }
+
+/* ============================================================
+   Ambient float - brief S10
+   The slow background drift that keeps every page alive. Applied
+   to the aura orbs, icon badges and the hero furniture.
+   ============================================================ */
+@keyframes aura-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33%      { transform: translate3d(3vw, -4vh, 0) scale(1.12); }
+  66%      { transform: translate3d(-2vw, 3vh, 0) scale(.94); }
+}
+@keyframes soft-float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -9px, 0); }
+}
+/* A wander rather than a bob: the hero's objects drift on both axes and tip
+   very slightly, so no two of them ever look like they are moving in step. */
+@keyframes object-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  25%      { transform: translate3d(7px, -11px, 0) rotate(1.4deg); }
+  50%      { transform: translate3d(0, -18px, 0) rotate(0deg); }
+  75%      { transform: translate3d(-7px, -8px, 0) rotate(-1.4deg); }
+}
+@keyframes tooth-float {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50%      { transform: translate3d(0, -17px, 0) rotate(.35deg); }
+}
+@keyframes halo-pulse {
+  0%, 100% { opacity: .45; transform: scale(1); }
+  50%      { opacity: .8;  transform: scale(1.12); }
+}
+@keyframes spark-twinkle {
+  0%, 100% { opacity: 0;   transform: translate3d(0, 0, 0) scale(.4) rotate(0deg); }
+  35%      { opacity: .95; transform: translate3d(0, -12px, 0) scale(1) rotate(45deg); }
+  70%      { opacity: .3;  transform: translate3d(0, -22px, 0) scale(.7) rotate(90deg); }
+}
+@keyframes rise-in {
+  from { opacity: 0; transform: translate3d(0, 34px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes bounce-soft {
+  0%, 100%  { transform: translate3d(0, 0, 0); }
+  25%       { transform: translate3d(0, -7px, 0); }
+  45%       { transform: translate3d(0, 0, 0); }
+  60%       { transform: translate3d(0, -3px, 0); }
+  75%       { transform: translate3d(0, 0, 0); }
+}
+@keyframes glow-pulse {
+  from { box-shadow: 0 0 0 0 rgba(191, 149, 67, .5); }
+  to   { box-shadow: 0 0 0 20px rgba(191, 149, 67, 0); }
+}
+@keyframes pin-ping {
+  0%   { opacity: .6; transform: translate(-50%, -50%) scale(.4); }
+  100% { opacity: 0;  transform: translate(-50%, -50%) scale(2.6); }
+}
+@keyframes sheen-sweep {
+  from { transform: translateX(-120%) skewX(-18deg); }
+  to   { transform: translateX(320%) skewX(-18deg); }
+}
+
+/* On the home page the bar's contents drop in from above the frame rather than
+   fading, so they read as arriving beside the logo that was there all along.
+   visibility is stepped at the end on the way out, or they would vanish before
+   they had finished leaving. */
+body[data-page=home] .main-nav {
+  transition:
+    opacity 420ms var(--ease-out),
+    translate 480ms var(--ease-out),
+    visibility 0s linear 480ms;
+}
+body[data-page=home] .site-header.is-solid .main-nav {
+  transition:
+    opacity 420ms var(--ease-out),
+    translate 480ms var(--ease-out),
+    visibility 0s;
+}
+/* These two carry hover states of their own. `transition` is one property, so
+   listing only the entrance here would silently drop the hover motion - their
+   own lists are restated alongside it, at their own timings. */
+body[data-page=home] .nav-booking {
+  transition:
+    opacity 420ms var(--ease-out),
+    visibility 0s linear 480ms,
+    translate var(--dur) var(--ease-spring),
+    scale var(--dur) var(--ease-spring),
+    box-shadow var(--dur) var(--ease),
+    background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+body[data-page=home] .menu-toggle {
+  transition:
+    opacity 420ms var(--ease-out),
+    visibility 0s linear 480ms,
+    translate var(--dur) var(--ease-spring),
+    background-color var(--dur) var(--ease),
+    color var(--dur) var(--ease),
+    transform var(--dur-fast) var(--ease),
+    rotate var(--dur) var(--ease-spring);
+}
+body[data-page=home] .site-header.is-solid .nav-booking,
+body[data-page=home] .site-header.is-solid .menu-toggle {
+  transition-delay: 0s;
+}
+/* The links land a beat after the buttons, so the bar assembles rather than
+   snapping in as one block. */
+body[data-page=home] .site-header.is-solid .main-nav {
+  transition-delay: 90ms;
+}
+
+/* ---- hero slider ----
+   The cross-fade is deliberately slower than an interaction: the two slides
+   are a change of subject, not a state change, and they overlap while it
+   happens. visibility is stepped at the end of the fade rather than eased, or
+   the outgoing slide would vanish before it had finished going. */
+/* The backdrops cross-fade over the same span as the slides, so the change of
+   scene is one movement rather than two. */
+.hero-bg {
+  transition: opacity 900ms var(--ease-out);
+}
+.hero-slide {
+  transition:
+    opacity 900ms var(--ease-out),
+    translate 900ms var(--ease-out),
+    scale 900ms var(--ease-out),
+    visibility 0s linear 900ms;
+}
+.hero-slide.is-active {
+  transition:
+    opacity 900ms var(--ease-out),
+    translate 900ms var(--ease-out),
+    scale 900ms var(--ease-out),
+    visibility 0s;
+}
+.hero-slider-dot {
+  transition: width var(--dur-slow) var(--ease-out), background-color var(--dur) var(--ease);
+}
+.hero-slider-dot:hover:not(.is-active) {
+  background: rgba(143, 109, 44, .6);
+}
+/* The frame steadies under the pointer and lifts a little, the same freeze the
+   hero copy does. */
+.hero-video-wrap {
+  transition: scale var(--dur-slow) var(--ease-spring);
+}
+.hero-video-wrap:hover {
+  animation-play-state: paused;
+  scale: 1.02;
+}
+
+/* Every page carries three slow-drifting gold orbs behind the content. */
+.page-aura span {
+  animation: aura-drift var(--aura-dur, 30s) var(--aura-delay, 0s) ease-in-out infinite;
+}
+
+/* Icon badges breathe wherever they appear. */
+.icon-badge {
+  animation: soft-float 6.5s ease-in-out infinite;
+  transition: transform var(--dur) var(--ease-spring), background-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+.service-card:hover .icon-badge,
+.why-item:hover .icon-badge,
+.contact-card:hover .icon-badge,
+.step:hover .icon-badge {
+  transform: scale(1.14) rotate(-6deg);
+}
+
+/* ============================================================
+   Global focus ring
+   One visible indicator for every interactive element. Nav links
+   and the compare handle override this with their own treatment.
+   ============================================================ */
+/* No border-radius here: an outline already follows the element's own shape,
+   and forcing one squared off every round control on the site. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+iframe:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--gold-dark);
+  outline-offset: 3px;
+}
+/* The confirmation is green throughout, ring included. */
+.done-card :focus-visible {
+  outline-color: var(--ok-dark);
+}
+
+.skip-link {
+  transition: none;
+}
+
+/* ============================================================
+   Primary navigation - brief S2
+   Text only: colour + an underline that draws in from the reading
+   edge. No background-color or background-image in ANY state, and
+   no geometry change, so the nav never shifts.
+   ============================================================ */
+.main-nav a {
+  position: relative;
+  transition: color var(--dur) var(--ease);
+}
+/* One underline, shared by the nav and by every text link in the footer, so
+   the "this is a link" affordance is identical at the top and bottom of the
+   page. It is a gradient bar rather than a hard border: it fades out over the
+   last stretch at each end and carries rounded caps, so the line has no blunt
+   corners to catch the eye. */
+.main-nav a::after,
+.footer a::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: -6px;
+  /* A true hairline. The radius is a pill value so it always resolves to half
+     the height, however thin the bar gets. */
+  height: 1px;
+  border-radius: 999px;
+  /* Barely a third of it is at full strength; the rest dissolves out to each
+     end, so there is no edge anywhere along it for the eye to catch on. */
+  background: linear-gradient(90deg,
+    transparent 0%, currentColor 34%, currentColor 66%, transparent 100%);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  /* Slower and on the decelerating curve - it settles rather than arrives. */
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+/* Draw in from the right when the page reads right-to-left. The gradient is
+   symmetric, so it needs no mirroring of its own. */
+[dir=rtl] .main-nav a::after,
+[dir=rtl] .footer a::after {
+  transform-origin: 100% 50%;
+}
+.main-nav a:hover,
+.main-nav a:focus-visible {
+  color: var(--gold-dark);
+}
+.main-nav a:active {
+  color: var(--gold);
+}
+.main-nav a:hover::after,
+.main-nav a:focus-visible::after,
+.main-nav a.active::after {
+  transform: scaleX(1);
+}
+.main-nav a:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 6px;
+  border-radius: 2px;
+}
+
+/* ============================================================
+   Buttons - brief S3 / S8 / S10
+   Every button gets the same three-part hover: a lift (via the
+   individual `translate` property so it survives ambient float
+   keyframes), a coloured shadow, and a light sheen that sweeps
+   across the face once.
+   ============================================================ */
+.btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  /* Declared once and handed to both, because a button can also be a reveal
+     target - see --anim-extra at the top of the file. Without this the reveal
+     rule replaces the list and the hover lift snaps. */
+  --card-motion:
+    translate var(--dur) var(--ease-spring),
+    scale var(--dur) var(--ease-spring),
+    box-shadow var(--dur) var(--ease),
+    background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+  transition: var(--card-motion);
+  --anim-extra: var(--card-motion);
+}
+.btn::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: -60%;
+  bottom: -60%;
+  inset-inline-start: 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .55), transparent);
+  transform: translateX(-120%) skewX(-18deg);
+  opacity: 0;
+}
+.btn:hover::before,
+.btn:focus-visible::before {
+  opacity: 1;
+  animation: sheen-sweep 700ms var(--ease-out);
+}
+.btn:hover,
+.btn:focus-visible {
+  translate: 0 -3px;
+  box-shadow: 0 12px 24px rgba(143, 109, 44, .24);
+}
+.btn:active {
+  translate: 0 0;
+  scale: .97;
+  box-shadow: 0 2px 6px rgba(143, 109, 44, .2);
+}
+/* The secondary button must not land on the primary's colour when hovered, or
+   the two read as the same control. Primary deepens to solid gold-dark; the
+   outline fills pale and keeps its dark gold text. */
+.btn-outline:hover,
+.btn-outline:focus-visible {
+  background: var(--gold-pale);
+  border-color: var(--gold-dark);
+  color: var(--gold-dark);
+}
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  background: var(--gold-dark);
+  border-color: var(--gold-dark);
+  color: #fff;
+}
+.cta-box .btn:hover,
+.cta-box .btn:focus-visible {
+  background: var(--ivory);
+}
+
+/* Bouncy variant - the "read more about the doctor" call to action.
+   It idles with a soft bounce and springs harder on hover. */
+.btn-bounce {
+  animation: bounce-soft 3.2s var(--ease-out) infinite;
+}
+.btn-bounce:hover,
+.btn-bounce:focus-visible {
+  animation-duration: 1.1s;
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #fff;
+}
+/* The glyph lives in CSS rather than the translation string, so it always
+   points the way the page reads. */
+.btn-bounce {
+  gap: 9px;
+}
+.btn-arrow {
+  display: inline-block;
+  transition: translate var(--dur) var(--ease-spring);
+}
+.btn-arrow::before {
+  content: '\2192';
+}
+[dir=rtl] .btn-arrow::before {
+  content: '\2190';
+}
+/* Any button carrying the glyph, so a button keeps its arrow motion whichever
+   variant it is. */
+.btn:hover .btn-arrow,
+.btn:focus-visible .btn-arrow,
+.section-head-link:hover .btn-arrow,
+.section-head-link:focus-visible .btn-arrow {
+  translate: calc(6px * var(--dir, 1)) 0;
+}
+
+/* Glow variant - the booking call to action.
+   A gold halo keeps expanding out of it so the eye lands there. It has to be
+   a box-shadow rather than a ring pseudo-element: .btn clips its own overflow
+   to keep the sheen inside the rounded corners, which would swallow a ring.
+   On hover the float stops but the halo carries on. */
+.btn-glow {
+  animation: soft-float 4.5s ease-in-out infinite, glow-pulse 2.4s var(--ease-out) infinite;
+}
+.btn-glow:hover,
+.btn-glow:focus-visible {
+  animation-play-state: paused, running;
+}
+/* A gold halo disappears on the gold panels, so those get a light one. */
+.cta-box .btn-glow,
+.cta-band .btn-glow {
+  animation-name: soft-float, glow-pulse-light;
+}
+@keyframes glow-pulse-light {
+  from { box-shadow: 0 0 0 0 rgba(255, 255, 255, .6); }
+  to   { box-shadow: 0 0 0 20px rgba(255, 255, 255, 0); }
+}
+
+/* Language switch + menu toggle */
+.lang-link,
+.menu-toggle {
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease),
+    transform var(--dur-fast) var(--ease), rotate var(--dur) var(--ease-spring);
+}
+.lang-link:hover,
+.lang-link:focus-visible {
+  background: var(--gold-pale);
+  color: var(--gold-dark);
+  rotate: 8deg;
+}
+.lang-link:active,
+.menu-toggle:active {
+  transform: scale(.94);
+}
+.menu-toggle:hover,
+.menu-toggle:focus-visible {
+  color: var(--gold-dark);
+}
+
+/* ============================================================
+   Cards and images - brief S3
+   ============================================================ */
+/* Every card here is also a reveal target, so the list is declared once and
+   handed to both `transition` and --anim-extra: the first covers the card
+   before reveal.js touches it, the second survives the reveal rule above. */
+.service-card,
+.contact-card,
+.work-card {
+  --card-motion: translate var(--dur-slow) var(--ease-spring),
+    box-shadow var(--dur-slow) var(--ease), border-color var(--dur) var(--ease);
+  transition: var(--card-motion);
+  --anim-extra: var(--card-motion);
+}
+
+/* ---- expanding service cards ----
+   The row trades width by animating flex-grow on the cards and the width of
+   the panel beside them. Everything that moves runs on the same curve and the
+   same duration, so the card growing, the neighbours giving up their width and
+   the panel opening read as one movement. The panel's contents ride in
+   slightly late and slightly offset, which is what stops them appearing all at
+   once at full size. */
+.service-card {
+  --card-motion: flex-grow var(--dur-panel) var(--ease-panel),
+    flex-basis var(--dur-panel) var(--ease-panel),
+    padding var(--dur-panel) var(--ease-panel),
+    /* the squeezed neighbours fade as they narrow, so opacity has to travel
+       with the width rather than on the slower reveal timing */
+    opacity var(--dur-panel) var(--ease-panel),
+    translate var(--dur-slow) var(--ease-spring), box-shadow var(--dur-slow) var(--ease),
+    border-color var(--dur) var(--ease);
+  transition: var(--card-motion);
+  --anim-extra: var(--card-motion);
+}
+/* width/margin-inline drive the sideways reveal on wide screens; max-height and
+   margin-block drive the downward one once the card stacks. */
+.service-detail {
+  transition: width var(--dur-panel) var(--ease-panel),
+    max-height var(--dur-panel) var(--ease-panel),
+    margin-inline-start var(--dur-panel) var(--ease-panel),
+    margin-block-start var(--dur-panel) var(--ease-panel),
+    opacity var(--dur) var(--ease-panel);
+}
+.service-detail-inner {
+  opacity: 0;
+  translate: calc(20px * var(--dir, 1)) 0;
+  transition: opacity var(--dur-panel) var(--ease-panel),
+    translate var(--dur-panel) var(--ease-panel);
+}
+/* The photograph waits until the card has most of its width, then slides in,
+   so the two movements read one after the other instead of at once. */
+.service-card.is-open .service-detail-inner {
+  opacity: 1;
+  translate: 0 0;
+  transition-delay: 260ms;
+}
+.service-toggle {
+  transition: rotate var(--dur-panel) var(--ease-panel),
+    background-color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+/* The squeezed cards give up their blurb and some type size on the same curve
+   as the width change; the fuller description unfolds on it too. */
+.service-main > p,
+.service-main h3 {
+  transition: opacity var(--dur-panel) var(--ease-panel),
+    max-height var(--dur-panel) var(--ease-panel),
+    margin var(--dur-panel) var(--ease-panel),
+    font-size var(--dur-panel) var(--ease-panel);
+}
+.service-card.is-open .service-more {
+  transition-delay: 180ms;
+}
+/* While one card is open the others step back a little, so the eye stays on
+   the one being read. */
+.cards-4.has-open .service-card:not(.is-open) {
+  opacity: .74;
+}
+.service-card:hover,
+.contact-card:hover,
+.work-card:hover,
+.service-card:focus-within,
+.contact-card:focus-within,
+.work-card:focus-within {
+  translate: 0 -8px;
+  box-shadow: 0 26px 50px rgba(92, 64, 39, .18);
+}
+
+.work-card-link {
+  transition: color var(--dur) var(--ease);
+}
+/* The case card's colour highlight: the wash fades up under the caption while
+   the gold rule draws across the top of it, both on the panel curve so they
+   read as one move with the card's lift. */
+.work-card-content::before {
+  transition: opacity var(--dur-panel) var(--ease-out);
+}
+.work-card-content::after {
+  transition: transform var(--dur-panel) var(--ease-out);
+}
+.work-card h3 {
+  transition: color var(--dur-slow) var(--ease);
+}
+
+/* Image hover, where images already sit in a rounded frame. Scaling is a
+   transform, so neighbours never reflow. */
+.about-collage img,
+.education-card img,
+.about-clinic,
+.clinic-photo {
+  transition: transform var(--dur-slow) var(--ease), filter var(--dur-slow) var(--ease);
+}
+.about-collage img:hover,
+.education-card img:hover,
+.about-clinic:hover,
+.clinic-photo:hover {
+  transform: scale(1.05);
+  filter: brightness(1.04);
+}
+.education-card img:hover {
+  filter: grayscale(0);
+}
+
+/* ============================================================
+   Text links - brief S8
+   ============================================================ */
+.text-link,
+.back {
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    translate var(--dur) var(--ease-spring), opacity var(--dur) var(--ease);
+}
+.text-link:hover,
+.text-link:focus-visible {
+  color: var(--gold);
+}
+/* The underlines on the body-copy links, matching the nav and footer bars. */
+.text-link::after,
+.section-head-link::after,
+.case-more::after {
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+.text-link:active,
+.back:active {
+  opacity: .7;
+}
+.back:hover,
+.back:focus-visible {
+  color: var(--gold);
+  translate: calc(-5px * var(--dir, 1)) 0;
+}
+
+/* ============================================================
+   Footer - brief S3 / S7 / S8
+   ============================================================ */
+/* Every text link in the footer - quick links, specialties, the phone numbers
+   and the privacy/terms pair - carries the underline, so no group reads as
+   less clickable than the one beside it. The shared rule is above, next to the
+   nav's; only the offset differs, the footer type being smaller. */
+.footer a {
+  position: relative;
+  transition: color var(--dur) var(--ease);
+}
+.footer a::after {
+  bottom: -4px;
+}
+.footer a:hover,
+.footer a:focus-visible {
+  color: var(--gold-pale);
+}
+.footer a:active {
+  color: var(--gold);
+}
+.footer a:hover::after,
+.footer a:focus-visible::after {
+  transform: scaleX(1);
+}
+/* The socials are icons, not words - a rule underneath one reads as a stray
+   mark rather than an affordance. They have their own lift on hover. */
+.socials a::after {
+  content: none;
+}
+
+.socials a {
+  transition: transform var(--dur) var(--ease-spring), opacity var(--dur) var(--ease);
+}
+.socials a:hover,
+.socials a:focus-visible {
+  transform: translateY(-5px) rotate(-8deg) scale(1.08);
+}
+.socials a:active {
+  transform: translateY(0);
+  opacity: .75;
+}
+
+/* ============================================================
+   Portfolio filter + pagination - brief S6
+   ============================================================ */
+.filter-btn,
+.pager-btn {
+  position: relative;
+  overflow: hidden;
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease), translate var(--dur) var(--ease-spring),
+    box-shadow var(--dur) var(--ease);
+}
+.filter-btn:hover:not(.active),
+.filter-btn:focus-visible:not(.active),
+.pager-btn:hover:not([aria-current]):not([disabled]),
+.pager-btn:focus-visible:not([aria-current]):not([disabled]) {
+  border-color: var(--gold);
+  color: var(--gold-dark);
+  translate: 0 -3px;
+  box-shadow: 0 10px 20px rgba(92, 64, 39, .12);
+}
+.filter-btn:active,
+.pager-btn:not([disabled]):active {
+  translate: 0 0;
+  scale: .96;
+}
+
+/* ============================================================
+   Compare slider - brief S6
+   ============================================================ */
+.compare-grip {
+  transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.compare:hover .compare-grip {
+  box-shadow: 0 4px 14px #0004;
+}
+.compare-step {
+  transition: color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.compare-step:hover {
+  color: var(--gold);
+}
+.compare-step:active {
+  transform: scale(.85);
+}
+
+/* ============================================================
+   Back to top - brief S9
+   ============================================================ */
+.back-to-top {
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease-spring),
+    visibility var(--dur), background-color var(--dur) var(--ease);
+}
+.back-to-top:hover,
+.back-to-top:focus-visible {
+  background: var(--gold-dark);
+}
+.back-to-top.is-visible:hover,
+.back-to-top.is-visible:focus-visible {
+  transform: translateY(-4px) scale(1.08);
+}
+.back-to-top:active {
+  transform: translateY(0) scale(.94);
+}
+
+/* Contact cards, the professional journey and the booking list all warm on
+   hover on the same curve. */
+.contact-card::before,
+.booking-intro .expect,
+.booking-intro .expect li,
+.booking-intro .expect .icon-badge {
+  transition: background-color var(--dur-slow) var(--ease), opacity var(--dur-slow) var(--ease),
+    background-image var(--dur-slow) var(--ease), translate var(--dur-slow) var(--ease-spring),
+    border-color var(--dur) var(--ease);
+}
+.about-timeline article,
+.about-timeline article b,
+.about-timeline article small,
+.about-timeline article strong {
+  --card-motion: scale var(--dur-panel) var(--ease-spring), color var(--dur) var(--ease);
+  transition: var(--card-motion);
+  /* the article is a reveal target - see --anim-extra at the top of the file */
+  --anim-extra: var(--card-motion);
+}
+.about-timeline article::before {
+  transition: opacity var(--dur-panel) var(--ease-out);
+}
+
+/* Case cards: the "view details" control and the dialog it opens. The booking
+   confirmation rides the same timings. */
+.case-modal,
+.done-modal {
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+.case-modal-card,
+.done-card {
+  transition: opacity var(--dur-panel) var(--ease-out),
+    translate var(--dur-panel) var(--ease-out),
+    scale var(--dur-panel) var(--ease-out);
+  transition-delay: 60ms;
+}
+.done-mark path {
+  transition: stroke-dashoffset 520ms var(--ease-out) 260ms;
+}
+.case-more,
+.case-modal-card .modal-close {
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease);
+}
+.case-more:hover .btn-arrow,
+.case-more:focus-visible .btn-arrow {
+  translate: calc(6px * var(--dir, 1)) 0;
+}
+
+/* ============================================================
+   Form fields
+   ============================================================ */
+.field input,
+.field select,
+.field textarea {
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease), outline-color var(--dur) var(--ease),
+    translate var(--dur) var(--ease);
+}
+
+/* Hover and focus speak in the same place: a 2px ring one pixel off the
+   field. It is always there and only changes colour, so it fades in and out
+   instead of appearing from nowhere, and hovering shows exactly where the
+   focus ring is about to land - hover is the pale version of the same mark,
+   not a different mark somewhere else. */
+.field input,
+.field select,
+.field textarea,
+.select-trigger {
+  outline: 2px solid transparent;
+  outline-offset: 1px;
+}
+.field input:hover,
+.field select:hover,
+.field textarea:hover,
+.field:hover .select-trigger {
+  border-color: var(--gold-pale);
+  outline-color: var(--gold-pale);
+}
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+  border-color: var(--gold);
+  /* background-color, not the shorthand: the select carries its chevron as a
+     background-image, and the shorthand would wipe it on focus. */
+  background-color: #fff;
+  box-shadow: 0 8px 20px rgba(92, 64, 39, .08);
+}
+/* Last, so focus always outranks hover on the shared ring. The offset is
+   restated because the site-wide focus ring sits further out at 3px; on a
+   field it hugs the box. */
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible,
+.field:focus-within .select-trigger {
+  outline-color: var(--gold-dark);
+  outline-offset: 1px;
+}
+/* Focus mode: as soon as any control in the form has focus, the hover feedback
+   on the other fields fades away. Two lit fields read as two active ones - the
+   one being filled in should be the only thing highlighted, and the pointer
+   passing over its neighbours on the way to the next field should not keep
+   lighting them up. The border and the ring fade on their own transitions, so
+   it is a fade rather than a cut. */
+form:focus-within .field:not(:focus-within):hover input,
+form:focus-within .field:not(:focus-within):hover select,
+form:focus-within .field:not(:focus-within):hover textarea,
+form:focus-within .field:not(:focus-within):hover .select-trigger {
+  /* the field's resting border, as set in global.css */
+  border-color: #ddcfc4;
+  outline-color: transparent;
+}
+form:focus-within .field:not(:focus-within):hover::after {
+  transform: scaleX(0);
+}
+
+.field label {
+  transition: color var(--dur) var(--ease);
+}
+.field:focus-within label {
+  color: var(--gold-dark);
+}
+
+/* The hover underline, and the dropdown folding open and shut. Same curve and
+   duration as the fields themselves, so the line retracts on the beat the ring
+   arrives rather than trailing behind it. */
+.field::after {
+  transition: transform var(--dur) var(--ease);
+}
+.select-trigger {
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease), outline-color var(--dur) var(--ease);
+}
+.select-caret {
+  transition: rotate var(--dur-slow) var(--ease-out);
+}
+.select-menu {
+  transition: opacity var(--dur) var(--ease-out), transform var(--dur-slow) var(--ease-out);
+}
+.select-option,
+.cal-day,
+.cal-nav {
+  transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+/* ============================================================
+   Reduced motion
+   Honour the OS setting: no reveals, no transitions, no smooth scroll,
+   no ambient drift. Everything still ends in its final, visible state.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+  .has-js [data-anim] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  .page-aura {
+    display: none;
+  }
+  /* The slider stops advancing on its own (hero-slider.js checks the same
+     query); the slides still swap on the controls, just without the travel. */
+  .hero-slide {
+    translate: none;
+    scale: 1;
+  }
+  .hero-video-sheen {
+    display: none;
+  }
+}

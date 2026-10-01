@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title data-i18n="contact.docTitle">د. علاء حجاج — اتصل بنا</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/refinements.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/experience.css">
+  <script src="js/i18n-data.js"></script>
+  <script src="js/i18n.js"></script>
+</head>
+
+<body data-page="contact">
+  <div id="site-header"></div>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="container">
+        <span class="eyebrow" data-anim data-i18n="contact.eyebrow"></span>
+        <h1 class="heading" data-anim data-i18n="contact.h1"></h1>
+        <p data-anim data-i18n="contact.lead"></p>
+      </div>
+    </section>
+
+    <section>
+      <!-- Phone numbers, emails and handles carry dir="ltr" so they read
+           left-to-right even when the surrounding text is Arabic. -->
+      <div class="container contact-cards">
+        <article class="contact-card" data-anim>
+          <span class="icon-badge contact-card-icon">
+            <img class="ui-icon" src="assets/contact-phone.svg" alt="" aria-hidden="true">
+          </span>
+          <strong data-i18n="contact.callTitle"></strong>
+          <p>
+            <a href="tel:+201234567890" dir="ltr">+20 123 456 7890</a><br>
+            <a href="tel:+20223456789" dir="ltr">+20 2 2345 6789</a>
+          </p>
+        </article>
+
+        <article class="contact-card" data-anim>
+          <span class="icon-badge contact-card-icon">
+            <img class="ui-icon" src="assets/contact-email.svg" alt="" aria-hidden="true">
+          </span>
+          <strong data-i18n="contact.emailTitle"></strong>
+          <p>
+            <a href="mailto:info@alaahaggag.com" dir="ltr">info@alaahaggag.com</a><br>
+            <a href="mailto:support@alaahaggag.com" dir="ltr">support@alaahaggag.com</a>
+          </p>
+        </article>
+
+        <article class="contact-card" data-anim>
+          <span class="icon-badge contact-card-icon">
+            <img class="ui-icon" src="assets/contact-whatsapp.svg" alt="" aria-hidden="true">
+          </span>
+          <strong data-i18n="contact.whatsappTitle"></strong>
+          <p>
+            <a href="https://wa.me/201234567890" target="_blank" rel="noopener noreferrer" dir="ltr">
+              +20 123 456 7890</a><br>
+            <a href="https://wa.me/20223456789" target="_blank" rel="noopener noreferrer" dir="ltr">
+              +20 2 2345 6789</a>
+          </p>
+        </article>
+
+        <article class="contact-card" data-anim>
+          <span class="icon-badge contact-card-icon">
+            <img class="ui-icon" src="assets/contact-social.svg" alt="" aria-hidden="true">
+          </span>
+          <strong data-i18n="contact.socialTitle"></strong>
+          <p>
+            <a href="https://instagram.com/alaahaggag" target="_blank" rel="noopener noreferrer" dir="ltr">
+              Instagram · @alaahaggag</a><br>
+            <a href="https://facebook.com/alaahaggag" target="_blank" rel="noopener noreferrer" dir="ltr">
+              Facebook · alaahaggag</a>
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- The form and the map get a fixed, matched pair of directions rather
+         than the randomised effect the rest of the site uses: they read as one
+         unit, so they should arrive as one. -->
+    <section class="section">
+      <div class="container two-col">
+        <div class="panel" data-anim="start">
+          <h2 class="heading" data-i18n="contact.formTitle"></h2>
+
+          <form>
+            <div class="form-grid">
+              <div class="field full">
+                <label for="contact-name" data-i18n="form.name"></label>
+                <input id="contact-name" name="name" type="text" required autocomplete="name"
+                  data-i18n-attr="placeholder:form.namePlaceholder">
+              </div>
+              <div class="field">
+                <label for="contact-email" data-i18n="form.email"></label>
+                <input id="contact-email" name="email" type="email" required autocomplete="email" dir="ltr"
+                  data-i18n-attr="placeholder:form.emailPlaceholder">
+              </div>
+              <div class="field">
+                <label for="contact-phone" data-i18n="form.phone"></label>
+                <input id="contact-phone" name="phone" type="tel" required autocomplete="tel" dir="ltr"
+                  data-i18n-attr="placeholder:form.phonePlaceholder">
+              </div>
+              <div class="field full">
+                <label for="contact-service" data-i18n="form.help"></label>
+                <select id="contact-service" name="service">
+                  <option value="veneers" data-i18n="form.optVeneers"></option>
+                  <option value="whitening" data-i18n="form.optWhitening"></option>
+                  <option value="smile-design" data-i18n="form.optSmileDesign"></option>
+                  <option value="inquiry" data-i18n="form.optInquiry"></option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="contact-notes" data-i18n="form.notes"></label>
+                <textarea id="contact-notes" name="notes"
+                  data-i18n-attr="placeholder:form.notesPlaceholder"></textarea>
+              </div>
+            </div>
+            <button class="btn btn-primary form-submit" type="submit" data-i18n="contact.submit"></button>
+          </form>
+        </div>
+
+        <div class="panel map-card" data-anim="end">
+          <!-- Everything layered over the map is decoration and carries
+               pointer-events:none, so the map itself stays draggable. -->
+          <div class="map-frame">
+            <iframe class="map-embed" loading="lazy" data-i18n-attr="title:contact.mapFrame"
+              title="Clinic location"
+              src="https://www.openstreetmap.org/export/embed.html?bbox=31.22%2C30.02%2C31.28%2C30.07&amp;layer=mapnik"></iframe>
+
+            <div class="map-veil" aria-hidden="true"></div>
+            <span class="map-pin" aria-hidden="true"></span>
+
+            <div class="map-chip" aria-hidden="true">
+              <strong data-i18n="contact.mapTitle"></strong>
+              <span data-i18n="contact.mapChip"></span>
+            </div>
+
+            <a class="btn btn-dark map-open" target="_blank" rel="noopener noreferrer"
+              href="https://www.openstreetmap.org/?mlat=30.045&amp;mlon=31.25#map=14/30.045/31.25"
+              data-i18n="contact.mapOpen"></a>
+          </div>
+
+          <div class="location-info">
+            <h3 class="heading" data-i18n="contact.mapTitle"></h3>
+            <p data-i18n="contact.address"></p>
+
+            <div class="hours">
+              <strong data-i18n="contact.hoursTitle"></strong>
+              <div class="hour-row">
+                <span data-i18n="contact.days1"></span>
+                <b data-i18n="contact.hours1"></b>
+              </div>
+              <div class="hour-row">
+                <span data-i18n="contact.days2"></span>
+                <b data-i18n="contact.hours2"></b>
+              </div>
+              <div class="hour-row">
+                <span data-i18n="contact.days3"></span>
+                <b class="closed" data-i18n="contact.closed"></b>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="js/icons.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/forms.js"></script>
+  <script src="js/slider.js"></script>
+  <script src="js/portfolio-filter.js"></script>
+  <script src="js/fields.js"></script>
+  <script src="js/motion.js"></script>
+  <script src="js/reveal.js"></script>
+  <script src="js/scroll.js"></script>
+</body>
+
+</html>

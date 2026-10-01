@@ -1,0 +1,2875 @@
+/* The experience layer: components that were reshaped for the animated build.
+ *
+ * Loaded last, so it owns anything it redefines. Structure and decoration live
+ * here; the shared motion vocabulary (keyframes, reveal variants, hover states)
+ * stays in animations.css, and this file only wires components up to it.
+ *
+ * Contents
+ *   1  scaffolding for the fixed header
+ *   2  ambient aura
+ *   3  header states
+ *   4  hero
+ *   5  service cards
+ *   6  home "about the doctor" block
+ *   7  featured-case carousel
+ *   8  contact: map + form
+ *   9  about page
+ *  10  case detail page
+ *  11  responsive
+ */
+
+:root {
+  --header-h: 112px;
+}
+
+/* ============================================================
+   1. Fixed header scaffolding
+   The bar floats over the page on every route. Each page reserves
+   its height, except the home page, whose hero deliberately runs
+   underneath it.
+   ============================================================ */
+body {
+  padding-top: var(--header-h);
+  /* An element waiting to be revealed sits up to 70px outside the container,
+     which would give the page a horizontal scrollbar until it lands. Nothing
+     here ever scrolls sideways, so clip that axis. `clip` leaves the fixed
+     header, aura and back-to-top button alone; `hidden` is the fallback for
+     browsers without it. */
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+body[data-page=home] {
+  padding-top: 0;
+}
+[id] {
+  scroll-margin-top: calc(var(--header-h) + 16px);
+}
+
+/* ============================================================
+   2. Ambient aura - the slow gold orbs behind every page
+   Injected by motion.js, so it is absent under reduced motion.
+   ============================================================ */
+.page-aura {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.page-aura span {
+  position: absolute;
+  width: var(--orb-size, 320px);
+  height: var(--orb-size, 320px);
+  border-radius: 50%;
+  opacity: .5;
+  filter: blur(46px);
+  background: radial-gradient(circle at 35% 35%,
+      rgba(234, 217, 178, .85), rgba(191, 149, 67, .18) 55%, rgba(191, 149, 67, 0) 72%);
+}
+
+/* ============================================================
+   3. Header states - brief S11
+   Over the home hero the bar is chrome-free: no card, no shadow,
+   just the links sitting on the photograph. The moment the hero
+   ends it materialises - the shell fades to white, a soft shadow
+   appears and a gradient below the bar merges it into the page.
+   ============================================================ */
+.site-header {
+  position: fixed;
+  top: 0;
+  inset-inline: 0;
+  z-index: 60;
+  padding: 20px 0;
+  transition: background-color var(--dur-slow) var(--ease-out), padding var(--dur-slow) var(--ease-out);
+}
+/* The header element itself paints nothing - no strip, no gradient haze. What
+   you see is the nav shell alone, floating over whatever is beneath it, which
+   is why there is no band edge across the page.
+
+   The shell is frosted rather than opaque: it is translucent enough to read
+   what is passing underneath, and blurs it so the links stay legible over
+   photographs and text alike. Nothing above the bar is blurred while the page
+   sits at the top, because at that point there is only page background back
+   there - the effect appears as content scrolls up behind it. */
+.nav-shell {
+  background: rgba(255, 255, 255, .74);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
+  /* The frost fades in with the rest of the bar as it materialises over the
+     home hero, rather than snapping on a frame ahead of the background. */
+  transition: background-color 400ms var(--ease-out), box-shadow 400ms var(--ease-out),
+    -webkit-backdrop-filter 400ms var(--ease-out), backdrop-filter 400ms var(--ease-out);
+}
+/* Without backdrop-filter there is no blur to hide behind, so the shell goes
+   back to solid white rather than leaving the links over live content. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nav-shell {
+    background: #fff;
+  }
+}
+.site-header.is-solid .nav-shell {
+  box-shadow: 0 16px 34px rgba(92, 64, 39, .13);
+}
+
+/* Home page only: over the hero the bar is just the logo and the language
+   switch, and it scrolls away with the hero instead of following the page -
+   absolute rather than fixed. There is no positioned ancestor, so it anchors
+   to the top of the document, which is what makes it scroll off. */
+body[data-page=home] .site-header:not(.is-solid) {
+  position: absolute;
+  top: 0;
+}
+/* The links, the booking button and the menu toggle are lifted out of the
+   frame and drop back in with the fixed bar once the hero has scrolled past -
+   the trigger lives in motion.js. visibility, not opacity alone, so they are
+   genuinely gone rather than invisible-but-tabbable. */
+body[data-page=home] .site-header:not(.is-solid) .main-nav,
+body[data-page=home] .site-header:not(.is-solid) .nav-booking,
+body[data-page=home] .site-header:not(.is-solid) .menu-toggle {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  translate: 0 -140%;
+}
+/* The frost comes off with it, so nothing blurs the photograph on the way. */
+body[data-page=home] .site-header:not(.is-solid) .nav-shell {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+/* Between the widest layout and the point the bar collapses to a menu button,
+   the links had a fixed 16px and a fixed 64px gap - 192px of gap for 188px of
+   words - so by about 950px the row was wedged between the logo and the
+   booking button with no space left on either side. Type and spacing now scale
+   down together, so the bar tightens gradually instead of jamming and then
+   snapping to the menu.
+
+   Scoped above the collapse point: below it the links are a dropdown panel
+   with room of their own, and should stay full size. */
+@media (min-width: 901px) {
+  .nav-shell {
+    grid-template-columns:
+      clamp(186px, 21vw, 230px) 1fr clamp(186px, 21vw, 230px);
+  }
+  .main-nav {
+    gap: clamp(22px, 5.4vw, 64px);
+  }
+  .main-nav a {
+    font-size: clamp(13px, 1.35vw, 16px);
+  }
+  .brand-name {
+    font-size: clamp(13px, 1.35vw, 16px);
+  }
+  .brand-name small {
+    font-size: clamp(7px, .72vw, 8px);
+  }
+  .nav-booking {
+    padding-inline: clamp(12px, 1.7vw, 18px);
+  }
+}
+
+/* ---- one underline for the rest of the links ----
+   The nav and the footer already share a soft rule (animations.css). These
+   three were still drawing a hard 1px border edge to edge: a blunt line with
+   corners at both ends, which reads heavier than the type above it. Same
+   recipe as the others now - a hairline that fades out at each end, with
+   rounded caps - built as a bar rather than a border so it can be inset from
+   the text's edges and given a radius.
+
+   Unlike the nav and footer these are underlined at rest, because they sit in
+   body copy where nothing else marks them as links. They carry the bar at low
+   opacity and bring it up to full on hover, so the behaviour is unchanged and
+   only the shape of the line differs. */
+.text-link,
+.section-head-link,
+.case-more {
+  position: relative;
+  border-bottom: 0;
+  padding-bottom: 5px;
+}
+.text-link::after,
+.section-head-link::after,
+.case-more::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  border-radius: 999px;
+  pointer-events: none;
+  /* currentColor, so it warms with the link rather than needing its own
+     hover colour. Same hairline and same long dissolve as the nav and footer
+     bars in animations.css. */
+  background: linear-gradient(90deg,
+    transparent 0%, currentColor 34%, currentColor 66%, transparent 100%);
+  opacity: .55;
+}
+.text-link:hover::after,
+.text-link:focus-visible::after,
+.section-head-link:hover::after,
+.section-head-link:focus-visible::after,
+.case-more:hover::after,
+.case-more:focus-visible::after,
+.work-card:hover .case-more::after {
+  opacity: 1;
+}
+
+/* ============================================================
+   4. Hero - brief S11
+   Full viewport height. The photograph sits in its own layer,
+   scaled past the frame so it has room to drift with the pointer,
+   and floats slowly on a loop - the tooth is the only solid object
+   in the shot, so the whole layer moving reads as the tooth
+   levitating. Copy and buttons float on their own, slower cycles
+   and freeze the moment the pointer enters.
+   ============================================================ */
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  margin-top: 0;
+  padding-top: var(--header-h);
+  padding-bottom: 70px;
+  background: #f7ede5;
+}
+/* ---- the two slides ----
+   Stacked in a single grid cell rather than laid out in a row: the hero is
+   then always as tall as its tallest slide, and moving between them is a
+   cross-fade instead of a translated track. */
+.hero-slides {
+  display: grid;
+  width: 100%;
+}
+.hero-slide {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  opacity: 0;
+  /* Held slightly back and to the side so it arrives rather than appears. */
+  translate: calc(38px * var(--dir, 1)) 0;
+  scale: .97;
+  /* Off-stage slides must leave the tab order and the a11y tree, not just
+     fade out - the same lesson as the works carousel. */
+  visibility: hidden;
+  pointer-events: none;
+}
+.hero-slide.is-active {
+  opacity: 1;
+  translate: 0 0;
+  scale: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* The two backdrops sit at hero level and cross-fade with the slide, so each
+   one reaches the full bleed - behind the header and past the bottom padding -
+   which a backdrop parented to a transformed slide cannot do. */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+}
+.hero[data-active='0'] .hero-bg[data-hero-bg='0'],
+.hero[data-active='1'] .hero-bg[data-hero-bg='1'] {
+  opacity: 1;
+}
+
+.hero-stage {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+/* The photograph is composed for a left-hand tooth; Arabic mirrors it. */
+html[lang=ar] .hero-stage {
+  transform: scaleX(-1);
+}
+.hero-photo {
+  position: absolute;
+  inset: 0;
+  /* Positioned at 25% rather than centred: `cover` on a full-height frame
+     crops the sides, and the tooth lives in the left quarter of the shot, so
+     centring would push it against the edge. */
+  background: url('../assets/herosection.jpg') 25% center/cover no-repeat;
+  scale: 1.1;
+  translate: calc(var(--mx, 0) * var(--dir, 1) * 22px) calc(var(--my, 0) * 15px);
+  transition: translate 900ms cubic-bezier(.16, 1, .3, 1);
+  animation: tooth-float 9s ease-in-out infinite;
+}
+.hero-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+      rgba(249, 237, 226, .02) 0%, rgba(249, 237, 226, .08) 45%, rgba(249, 237, 226, .42) 100%);
+}
+/* The hero sits on a warmer ground (#f7ede5) than the page below it (--ivory),
+   so the join has to be faded rather than butted together.
+
+   A two-stop gradient will not do it: alpha climbing linearly reads as a band
+   with a visible edge where the fade begins, which is exactly the seam this is
+   meant to hide. The stops below trace an ease instead - almost nothing for the
+   first third, then gathering - so there is no point along it where the eye can
+   find an edge. It is also given a third of the hero to travel in rather than a
+   fifth, which is what makes it read as the page arriving rather than a strip
+   at the bottom of the photograph. */
+.hero-fade {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: -1;
+  height: 34%;
+  pointer-events: none;
+  background: linear-gradient(180deg,
+    rgba(252, 246, 242, 0) 0%,
+    rgba(252, 246, 242, .024) 19%,
+    rgba(252, 246, 242, .092) 34%,
+    rgba(252, 246, 242, .196) 47%,
+    rgba(252, 246, 242, .312) 56.5%,
+    rgba(252, 246, 242, .44) 65%,
+    rgba(252, 246, 242, .567) 73%,
+    rgba(252, 246, 242, .688) 80.2%,
+    rgba(252, 246, 242, .796) 86.1%,
+    rgba(252, 246, 242, .884) 91%,
+    rgba(252, 246, 242, .949) 95.2%,
+    rgba(252, 246, 242, .988) 98.2%,
+    var(--ivory) 100%);
+}
+.hero-halo {
+  position: absolute;
+  left: 5%;
+  top: 26%;
+  width: min(40vw, 440px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+      rgba(255, 255, 255, .85), rgba(234, 217, 178, .34) 42%, rgba(234, 217, 178, 0) 70%);
+  animation: halo-pulse 7s ease-in-out infinite;
+}
+.hero-spark {
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  width: var(--s, 14px);
+  aspect-ratio: 1;
+  opacity: 0;
+  background: linear-gradient(180deg, #fff, var(--gold-pale));
+  clip-path: polygon(50% 0, 57% 43%, 100% 50%, 57% 57%, 50% 100%, 43% 57%, 0 50%, 43% 43%);
+  filter: drop-shadow(0 0 7px rgba(191, 149, 67, .65));
+  animation: spark-twinkle 5.5s var(--d, 0s) ease-in-out infinite;
+}
+
+/* Small cards, rings and dots scattered around the tooth. All decorative, all
+   inside .hero-stage, so they mirror with the photograph in Arabic and never
+   take a pointer event. */
+.hero-chip {
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 22px 15px 15px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .78);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 14px 30px rgba(92, 64, 39, .14);
+  animation: object-drift var(--t, 8s) var(--d, 0s) ease-in-out infinite;
+}
+/* The stage is mirrored in Arabic, which would leave the chip text running
+   backwards. The counter-flip has to use the individual `scale` property, not
+   `transform` - the float keyframes own `transform`, and would overwrite it. */
+html[lang=ar] .hero-chip {
+  scale: -1 1;
+}
+.hero-chip-icon {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(140deg, var(--gold), var(--gold-dark));
+}
+/* Sprite icons: stroked in currentColor, so white on the gold disc. */
+.hero-chip-icon .ui-icon {
+  width: 17px;
+  height: 17px;
+  color: #fff;
+}
+.hero-chip b {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold-dark);
+  white-space: nowrap;
+}
+.hero-chip-sm {
+  padding: 12px 18px 12px 12px;
+  border-radius: 12px;
+}
+.hero-chip-sm .hero-chip-icon {
+  width: 26px;
+  height: 26px;
+}
+.hero-chip-sm .hero-chip-icon img {
+  width: 13px;
+  height: 13px;
+}
+.hero-chip-sm b {
+  font-size: 11px;
+}
+
+.hero-ring {
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  width: var(--s, 70px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(191, 149, 67, .34);
+  border-radius: 50%;
+  animation: object-drift var(--t, 10s) var(--d, 0s) ease-in-out infinite;
+}
+.hero-dot {
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 6px rgba(191, 149, 67, .12);
+  animation: object-drift var(--t, 7s) var(--d, 0s) ease-in-out infinite;
+}
+
+/* ---- slide 2: the clinic as a place ----
+   No photograph behind this one - a warm wash with two slow orbs, so the eye
+   goes to the video rather than competing with a second full-bleed image. */
+.hero-place-wash {
+  background:
+    radial-gradient(120% 90% at 78% 12%, rgba(191, 149, 67, .16), rgba(191, 149, 67, 0) 58%),
+    linear-gradient(160deg, #fdf7f1 0%, #f7ede5 52%, #f2e4d6 100%);
+}
+.hero-place-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(46px);
+  background: radial-gradient(circle, rgba(191, 149, 67, .34), rgba(191, 149, 67, 0) 70%);
+  animation: aura-drift 34s ease-in-out infinite;
+}
+.hero-place-orb-a {
+  inset-inline-start: 4%;
+  top: 12%;
+  width: min(38vw, 420px);
+  aspect-ratio: 1;
+}
+.hero-place-orb-b {
+  inset-inline-end: 8%;
+  bottom: 6%;
+  width: min(30vw, 340px);
+  aspect-ratio: 1;
+  animation-duration: 27s;
+  animation-delay: -9s;
+}
+
+.hero-place-inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(32px, 5vw, 72px);
+}
+
+/* ---- the video frame ----
+   Three layers: a halo turning slowly behind it, the gold-edged frame itself,
+   and a sheen that crosses the glass every so often. The frame drifts on its
+   own cycle and steadies under the pointer, the same behaviour as the copy on
+   slide one. */
+.hero-video-wrap {
+  position: relative;
+  animation: soft-float 8s ease-in-out infinite;
+}
+.hero-video-halo {
+  position: absolute;
+  inset: -9% -7%;
+  border-radius: 34px;
+  background: conic-gradient(from 0deg,
+      rgba(191, 149, 67, .42), rgba(234, 217, 178, .05) 28%,
+      rgba(191, 149, 67, .34) 56%, rgba(234, 217, 178, .05) 82%, rgba(191, 149, 67, .42));
+  filter: blur(26px);
+  opacity: .85;
+  animation: halo-turn 22s linear infinite;
+}
+@keyframes halo-turn {
+  to { rotate: 360deg; }
+}
+/* The gold edge is a gradient border drawn as padding under the video, which
+   keeps it a true hairline at every corner radius. */
+.hero-video-frame {
+  position: relative;
+  padding: 3px;
+  border-radius: 26px;
+  background: linear-gradient(150deg, rgba(214, 178, 106, .95), rgba(255, 255, 255, .5) 38%,
+      rgba(191, 149, 67, .9) 72%, rgba(255, 255, 255, .45));
+  box-shadow: 0 34px 64px -26px rgba(74, 52, 28, .58), 0 10px 26px rgba(92, 64, 39, .1);
+  overflow: hidden;
+}
+.hero-video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 23px;
+  background: #e8ddd2;
+}
+/* A single light pass across the glass, far enough apart to read as a
+   reflection rather than a loop. */
+.hero-video-sheen {
+  position: absolute;
+  z-index: 2;
+  top: -40%;
+  bottom: -40%;
+  inset-inline-start: 0;
+  width: 38%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .3), transparent);
+  animation: sheen-sweep 5.5s var(--ease-out) infinite;
+}
+
+.hero-place-badge {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 22px 15px 15px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .9);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 18px 38px rgba(92, 64, 39, .18);
+}
+.hero-place-badge b {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold-dark);
+  white-space: nowrap;
+}
+.hero-place-badge-a {
+  inset-inline-start: -26px;
+  top: 16%;
+  animation: object-drift 9.5s ease-in-out infinite;
+}
+.hero-place-badge-b {
+  inset-inline-end: -22px;
+  bottom: 14%;
+  animation: object-drift 11s -3s ease-in-out infinite;
+}
+
+.hero-place-copy .heading {
+  font-size: clamp(32px, 3.4vw, 50px);
+  margin: 12px 0 18px;
+  color: #5e4b22;
+}
+
+/* ---- slider controls ---- */
+/* Centred, and clear of the scroll cue below it - the cue is 26px off the
+   bottom and about 70px tall, so the dots sit above the whole stack. */
+.hero-slider-nav {
+  position: absolute;
+  z-index: 3;
+  inset-inline: 0;
+  bottom: 112px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.hero-slider-dots {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+/* A resting dot is a dot; the active one stretches into a bar, so the state is
+   legible without relying on colour alone. */
+.hero-slider-dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(143, 109, 44, .32);
+  cursor: pointer;
+}
+.hero-slider-dot.is-active {
+  width: 30px;
+  background: var(--gold-dark);
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+}
+.hero-copy > * {
+  position: relative;
+}
+/* Each line arrives, then settles into its own slow float. The headline is the
+   first line now that the small lead-in above it is gone. */
+.hero h1 {
+  animation: rise-in 850ms var(--ease-out) both, soft-float 8.5s ease-in-out infinite;
+  animation-delay: 300ms, 1.4s;
+}
+.hero-copy > p {
+  animation: rise-in 850ms var(--ease-out) both, soft-float 9.5s ease-in-out infinite;
+  animation-delay: 450ms, 1.6s;
+}
+/* The home about section's button rides the same idle float as the hero pair,
+   so the two read as the same control. It has no rise-in: the reveal engine
+   already brings it in, and the two entrances would fight. */
+.hero-actions .btn {
+  animation: rise-in 850ms var(--ease-out) both, soft-float 6s ease-in-out infinite;
+}
+.about-copy .btn {
+  animation: soft-float 6s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+.hero-actions .btn:first-child {
+  animation-delay: 600ms, 1.5s;
+}
+.hero-actions .btn:last-child {
+  animation-delay: 720ms, 1.9s;
+}
+/* Freeze on hover: the copy holds still while it is being read. The lift on
+   the buttons still lands, because that uses `translate`, not `transform`. */
+.hero-copy:hover > *,
+.hero-copy:hover .btn,
+.hero-copy:focus-within > *,
+.hero-copy:focus-within .btn {
+  animation-play-state: paused;
+}
+
+.hero-scroll {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  z-index: 1;
+  translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--gold-dark);
+  animation: rise-in 1s 1s var(--ease-out) both;
+}
+.hero-scroll-line {
+  position: relative;
+  width: 1px;
+  height: 46px;
+  overflow: hidden;
+  background: rgba(191, 149, 67, .28);
+}
+.hero-scroll-line::after {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: -46px;
+  width: 1px;
+  height: 46px;
+  background: var(--gold-dark);
+  animation: scroll-cue 2.2s var(--ease-out) infinite;
+}
+@keyframes scroll-cue {
+  0%        { transform: translateY(0); }
+  60%, 100% { transform: translateY(92px); }
+}
+.hero-scroll:hover .hero-scroll-line::after {
+  animation-duration: 1.1s;
+}
+
+/* ============================================================
+   5. Service cards - brief S12
+   ============================================================ */
+/* The row is a flex line so the cards can trade width by animating flex-grow -
+   the browser does the arithmetic, and there is never a measured pixel width
+   to go stale on resize. */
+.cards-4 {
+  counter-reset: svc;
+  display: flex;
+  align-items: stretch;
+  gap: 22px;
+  /* How much wider the open card gets than a collapsed one. At 5 against three
+     cards of 1 it takes about 62% of the row and the other three are squeezed
+     into narrow strips beside it. */
+  --svc-open: 5;
+  --svc-detail: 232px;
+}
+.service-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 34px 26px 30px;
+  /* Tall enough that the panel's copy fits without pushing the row taller when
+     a card opens - the row keeps one height in every state. */
+  min-height: 258px;
+  border: 1px solid #efe6de;
+  background: linear-gradient(180deg, #fff 0%, #fffaf4 100%);
+  /* flex-basis 0 so all four start equal regardless of their text. */
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  cursor: pointer;
+}
+.service-card.is-open {
+  flex-grow: var(--svc-open);
+}
+/* The column that is always on show. Deliberately not a positioning context,
+   so the chevron below anchors to the card's own corner in both states rather
+   than following this column inward when the card opens. */
+.service-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+/* The panel that opens beside it. It is a sideways reveal, not a downward one,
+   so the height of the row - and therefore the rest of the page - never moves. */
+.service-detail {
+  position: relative;
+  flex: 0 0 auto;
+  width: 0;
+  margin-inline-start: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+.service-card.is-open .service-detail {
+  width: var(--svc-detail);
+  margin-inline-start: 22px;
+  opacity: 1;
+}
+/* Fixed width on the inner block: the panel around it changes size, but the
+   content never reflows mid-animation, so nothing jumps or re-wraps. */
+/* The panel is the photograph and nothing else - all the words stay in the
+   column on the other side, under the one title the card already had.
+   Taken out of flow entirely: a percentage height on an image can fall back to
+   the image's own proportions, and a 5:8 photograph doing that would drive the
+   whole row taller. Pinned like this it can only ever fill the panel. The
+   fixed width keeps it from reflowing while the panel opens. */
+.service-detail-inner {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: var(--svc-detail);
+}
+.service-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+}
+/* The fuller description lives in the text column and is folded away until the
+   card opens. */
+.service-more {
+  margin: 0;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+.service-card.is-open .service-more {
+  max-height: 150px;
+  opacity: 1;
+}
+/* The one-line blurb folds away as the fuller text takes its place, so the two
+   never stack up and the row keeps a single height in every state. */
+.service-card.is-open .service-main > p:not(.service-more) {
+  max-height: 0;
+  margin: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+.service-main > p:not(.service-more) {
+  max-height: 150px;
+  overflow: hidden;
+}
+
+/* The three cards that are not open give up most of their width. They keep the
+   icon and the name; the blurb fades out rather than being clipped mid-line,
+   and the padding tightens so the name still has room to sit. */
+.cards-4.has-open .service-card:not(.is-open) {
+  padding-inline: 16px;
+}
+/* Folded away, not just faded: at a sliver's width this text would rewrap to
+   six or seven lines and, invisible or not, it would still push the whole row
+   taller than the open card. */
+.cards-4.has-open .service-card:not(.is-open) .service-main > p {
+  max-height: 0;
+  margin: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+.cards-4.has-open .service-card:not(.is-open) h3 {
+  font-size: 17px;
+}
+.cards-4.has-open .service-card:not(.is-open)::after {
+  opacity: 0;
+}
+
+/* The affordance: a chevron in the corner of the visible column, which turns
+   over once the card is open. */
+/* Inside the card, tucked into the bottom corner on the trailing side. The
+   z-index keeps it above the photograph once the card opens over it. */
+.service-toggle {
+  position: absolute;
+  z-index: 2;
+  inset-inline-end: 22px;
+  bottom: 22px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--gold-dark);
+  cursor: pointer;
+}
+.service-toggle .ui-icon {
+  width: 15px;
+  height: 15px;
+}
+[dir=rtl] .service-toggle .ui-icon {
+  transform: scaleX(-1);
+}
+.service-card:hover .service-toggle,
+.service-toggle:focus-visible {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: #fff;
+}
+.service-card.is-open .service-toggle {
+  rotate: 180deg;
+  border-color: var(--gold);
+  background: var(--gold);
+  color: #fff;
+}
+/* Room beside the text so it never runs into the chevron. */
+.service-main > p {
+  padding-inline-end: 40px;
+}
+.service-card.is-open .service-main > p {
+  padding-inline-end: 0;
+}
+/* Open, the chevron sits over the photograph rather than in the text column,
+   so the text needs no clearance beneath it. */
+/* Gold wash that floods in from the leading corner. */
+.service-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  border-radius: inherit;
+  background: radial-gradient(120% 100% at 0% 0%, rgba(191, 149, 67, .18), rgba(191, 149, 67, 0) 62%);
+  transition: opacity 450ms var(--ease-out);
+}
+.service-card:hover::before,
+.service-card:focus-within::before {
+  opacity: 1;
+}
+/* Quiet index number in the trailing corner. */
+.service-card::after {
+  counter-increment: svc;
+  content: counter(svc, decimal-leading-zero);
+  position: absolute;
+  top: 18px;
+  inset-inline-end: 22px;
+  font-family: var(--font-ui);
+  font-size: 30px;
+  line-height: 1;
+  color: rgba(191, 149, 67, .14);
+  transition: color 450ms var(--ease), transform 450ms var(--ease-spring),
+    opacity var(--dur-panel) var(--ease-panel);
+}
+.service-card:hover::after {
+  color: rgba(191, 149, 67, .42);
+  transform: scale(1.16);
+}
+/* The gold wash sits between the card's background and its contents. Doing it
+   with z-index inside the card's own stacking context - rather than by making
+   every child position:relative - leaves .service-main static, which is what
+   lets the chevron anchor to the card's corner instead of to that column. */
+.service-card::before {
+  z-index: -1;
+}
+.service-card .icon-badge {
+  width: 54px;
+  height: 54px;
+  background: linear-gradient(140deg, #fff, #f7edda);
+  border: 1px solid #f1e4cc;
+  box-shadow: 0 8px 18px rgba(92, 64, 39, .09);
+}
+.service-card .icon-badge img {
+  transition: filter var(--dur-slow) var(--ease);
+}
+.service-card:hover .icon-badge {
+  background: linear-gradient(140deg, var(--gold), var(--gold-dark));
+  border-color: var(--gold-dark);
+  box-shadow: 0 14px 26px rgba(143, 109, 44, .34);
+}
+.service-card:hover .icon-badge img {
+  filter: brightness(0) invert(1);
+}
+.service-card h3 {
+  display: inline-block;
+  position: relative;
+}
+.service-card h3::after {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: -6px;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), rgba(191, 149, 67, 0));
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 420ms var(--ease-out);
+}
+[dir=rtl] .service-card h3::after {
+  transform-origin: 100% 50%;
+  background: linear-gradient(270deg, var(--gold), rgba(191, 149, 67, 0));
+}
+.service-card:hover h3::after {
+  transform: scaleX(1);
+}
+
+/* "Why choose us" rows get the same treatment, lighter. */
+.why-item {
+  border-radius: 14px;
+  padding: 10px;
+  margin-inline: -10px;
+  transition: background-color var(--dur-slow) var(--ease), translate var(--dur-slow) var(--ease-spring);
+}
+.why-item:hover {
+  background: #fdf8f1;
+  translate: calc(6px * var(--dir, 1)) 0;
+}
+.cta-box {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(140deg, #d3ab6a, #c09246 45%, #a97e35);
+}
+.cta-box::before {
+  content: '';
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border: 24px solid rgba(255, 255, 255, .14);
+  border-radius: 50%;
+  inset-inline-end: -110px;
+  bottom: -130px;
+  animation: soft-float 9s ease-in-out infinite;
+}
+.cta-box > * {
+  position: relative;
+}
+.cta-box .icon-badge {
+  background: rgba(255, 255, 255, .22);
+  border: 1px solid rgba(255, 255, 255, .4);
+}
+/* The icons are gold artwork; on the gold panel they need to go white. */
+.cta-box .icon-badge img {
+  filter: brightness(0) invert(1);
+}
+
+/* ============================================================
+   6. Home "about the doctor" block
+   One photograph under an arch, with two objects hovering off
+   its corners.
+   ============================================================ */
+.about-arch {
+  position: relative;
+  padding: 0 26px 26px 0;
+}
+[dir=rtl] .about-arch {
+  padding: 0 0 26px 26px;
+}
+.about-arch-frame {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  /* The arch: a tall half-ellipse across the top, easing into ordinary
+     corners at the bottom. */
+  border-radius: 50% 50% 22px 22px / 34% 34% 22px 22px;
+  box-shadow: 0 26px 54px rgba(92, 64, 39, .2);
+}
+.about-arch-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* A hairline arch echoing the frame, offset behind it. */
+.about-arch-ring {
+  position: absolute;
+  z-index: -1;
+  inset-inline-start: 22px;
+  inset-inline-end: 4px;
+  top: -18px;
+  bottom: 48px;
+  border: 1px solid rgba(191, 149, 67, .38);
+  border-radius: 50% 50% 22px 22px / 34% 34% 22px 22px;
+}
+
+.about-float {
+  position: absolute;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .92);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 20px 44px rgba(92, 64, 39, .2);
+}
+.about-float-years {
+  inset-inline-end: -14px;
+  top: 15%;
+  padding: 22px 28px;
+  text-align: center;
+  color: #fff;
+  background: linear-gradient(140deg, #c19647, #8f6d2c 60%, #7c5e25);
+  animation: soft-float 6.5s ease-in-out infinite;
+}
+.about-float-years b {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 30px;
+  line-height: 1;
+}
+.about-float-years span {
+  display: block;
+  margin-top: 5px;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .85);
+}
+.about-float-care {
+  inset-inline-start: -8px;
+  bottom: 8%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 22px 16px 16px;
+  animation: soft-float 8.5s 1.2s ease-in-out infinite;
+}
+.about-float-icon {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(140deg, var(--gold), var(--gold-dark));
+}
+.about-float-icon img {
+  width: 19px;
+  height: 19px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+.about-float-text b {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--gold-dark);
+}
+.about-float-text small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* The narrow-screen sizing for these two badges lives with the rest of the
+   mobile hero/about rules at the bottom of the file - it was being set in two
+   places, and the later block won anyway. */
+.about-copy h2 {
+  position: relative;
+}
+.about-copy h2::after {
+  content: '';
+  display: block;
+  width: 68px;
+  height: 3px;
+  margin-top: 18px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold-pale));
+}
+.about-copy .btn {
+  margin-top: 26px;
+}
+
+/* Section header with a call to action sitting on the title's line. */
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 45px;
+}
+.section-head .section-title,
+.section-head .section-lead {
+  margin-bottom: 0;
+}
+.section-head-link {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding-bottom: 5px;
+  color: var(--gold-dark);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  /* the underline is the shared bar near the top of this file, not a border */
+}
+.section-head-link:hover,
+.section-head-link:focus-visible {
+  color: var(--gold);
+}
+
+/* ============================================================
+   7. Portfolio cover-flow - the works page hero
+   A row of tall portraits curving away at both edges. Every slide
+   is placed by coverflow.js purely with transforms; the numbers it
+   uses are the custom properties below, so the responsive
+   behaviour is written in media queries rather than in JS.
+   ============================================================ */
+/* The tuning lives on the section so both the heading block and the row read
+   the same numbers. coverflow.js reads them off its own root, which inherits
+   them from here.
+ *
+ * The row is deliberately plain: upright cards, even gaps, no arc, no turn.
+ * The geometry knobs are all still here and all set to zero, so the curve can
+ * be dialled back in by changing numbers rather than code. */
+.coverflow-section {
+  /* The width self-scales so the five cards always just fill the screen:
+     roughly 21vw each, floored on phones and capped on very wide monitors. */
+  --cf-w: clamp(148px, 17.5vw, 340px);
+  /* Tall portrait cards, 5:8 - the same shape the photographs are cut to. */
+  --cf-h: calc(var(--cf-w) / 5 * 8);
+  --cf-gap: 12px;
+  --cf-angle: 0;      /* degrees of 3D turn per step out from centre */
+  --cf-tilt: 0;       /* degrees of in-plane tip per step */
+  --cf-arc: 0px;      /* how far the middle of the row hangs below the ends */
+  --cf-depth: 0;      /* px pushed back per step */
+  --cf-scale: .075;   /* the centre card is the biggest; each step out shrinks */
+  /* Pulls the steps in to match the shrinking cards, so the gaps stay even. */
+  --cf-compress: .93;
+  --cf-visible: 2;    /* cards rendered either side of centre */
+  --cf-fade: 0;       /* opacity lost per step */
+  /* Empty space kept below the cards inside the clipping viewport, so the
+     shadow under each card has somewhere to fall instead of being cut off at
+     the frame edge. */
+  --cf-shadow-room: 56px;
+  /* Matching room above, so a card lifting on hover has somewhere to rise into
+     instead of being cut off at the top of the frame. */
+  --cf-lift-room: 26px;
+  --cf-duration: 900ms;
+  --cf-ease: cubic-bezier(.22, 1, .36, 1);
+  position: relative;
+  /* Clear air between the row of cards and the category grid below it. The
+     shadow run-off and the frame's own margin make up the rest of the gap. */
+  padding: 0 0 48px;
+}
+/* The portfolio page reads as one flat sheet: no drifting background glow
+   under any section, so the cards and the grid sit on the same colour. */
+body[data-page=works] .page-aura {
+  display: none;
+}
+/* scrollIntoView targets the grid wrapper, which has no id of its own, so it
+   needs the header offset spelled out. */
+[data-portfolio] {
+  scroll-margin-top: calc(var(--header-h) + 24px);
+}
+.coverflow-head {
+  text-align: center;
+  padding: 56px 0 40px;
+}
+.coverflow-title {
+  margin: 0 0 12px;
+  font-size: clamp(28px, 4.1vw, 58px);
+  line-height: 1.04;
+  text-transform: uppercase;
+  color: #4f3d16;
+}
+.coverflow-tagline {
+  margin: 0;
+  color: #8a7350;
+  font-family: var(--font-ui);
+  font-size: clamp(13px, 1.2vw, 16px);
+}
+
+.coverflow {
+  position: relative;
+  margin-bottom: 24px;
+}
+.coverflow-viewport {
+  position: relative;
+  overflow: hidden;
+  /* Vertical scrolling still belongs to the page; horizontal is ours. */
+  touch-action: pan-y;
+  cursor: grab;
+}
+.coverflow.is-dragging .coverflow-viewport {
+  cursor: grabbing;
+}
+.coverflow-track {
+  position: relative;
+  /* The cards are absolutely positioned, so the row needs its own height - one
+     card, the distance the middle of the arc drops, and the run-off the hover
+     lift and the shadows need above and below it. */
+  height: calc(var(--cf-h) + var(--cf-arc) + var(--cf-shadow-room) + var(--cf-lift-room));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  perspective: 1600px;
+  perspective-origin: 50% 46%;
+}
+.coverflow-slide {
+  position: absolute;
+  /* Sat down by the lift room, so the space above it stays free. */
+  top: var(--cf-lift-room);
+  left: 50%;
+  width: var(--cf-w);
+  height: var(--cf-h);
+  overflow: hidden;
+  border-radius: 14px;
+  backface-visibility: hidden;
+  /* A soft shadow pooled under the card. box-shadow paints outside the box, so
+     the card's own overflow:hidden does not clip it. */
+  box-shadow: 0 26px 30px -20px rgba(74, 52, 28, .55), 0 6px 16px rgba(92, 64, 39, .08);
+  transition: transform var(--cf-duration) var(--cf-ease),
+    opacity var(--cf-duration) var(--cf-ease),
+    /* Delayed on the way out, immediate on the way in, so a card never
+       blinks out before it has finished fading. */
+    visibility var(--cf-duration),
+    translate var(--dur-slow) var(--ease-spring),
+    box-shadow var(--dur-slow) var(--ease);
+}
+/* Hover lifts the card and eases the photograph in behind the caption. The
+   lift uses `translate`, which composes with the transform the engine writes
+   instead of fighting it. */
+.coverflow-slide:hover {
+  translate: 0 -12px;
+  box-shadow: 0 34px 40px -22px rgba(74, 52, 28, .6), 0 10px 24px rgba(92, 64, 39, .12);
+}
+.coverflow-slide > .coverflow-link > img {
+  transition: scale 700ms var(--cf-ease);
+}
+.coverflow-slide:hover > .coverflow-link > img {
+  scale: 1.06;
+}
+/* While a finger or the mouse is driving it, the row tracks the pointer
+   one-to-one instead of easing behind it. */
+.coverflow.is-dragging .coverflow-slide {
+  transition: none;
+}
+/* The whole card is a link into its category in the grid below. */
+.coverflow-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.coverflow-link:focus-visible {
+  outline: 3px solid var(--gold-dark);
+  outline-offset: -3px;
+  border-radius: inherit;
+}
+.coverflow-link > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* The images must not intercept the drag or start a native image drag. */
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Card caption: the photograph fades to white behind a badge, a name and two
+   short lines. Each card carries its own --card-accent. */
+.coverflow-caption {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 74px 16px 26px;
+  text-align: center;
+  pointer-events: none;
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, .5) 24%,
+      rgba(255, 255, 255, .89) 54%,
+      rgba(255, 255, 255, .97) 100%);
+}
+.coverflow-caption-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, .9vw, 14px);
+}
+.coverflow-icon {
+  flex: 0 0 auto;
+  width: clamp(32px, 3.1vw, 50px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--card-accent, #8f6d2c);
+}
+.coverflow-icon img {
+  width: 54%;
+  height: 54%;
+  object-fit: contain;
+  /* The glyph is gold artwork; on the filled badge it has to read as white. */
+  filter: brightness(0) invert(1);
+}
+.coverflow-caption h3 {
+  margin: 0;
+  font-size: clamp(15px, 1.6vw, 27px);
+  line-height: 1.12;
+  text-wrap: balance;
+  color: var(--card-accent, #8f6d2c);
+}
+.coverflow-caption p {
+  margin: clamp(8px, .9vw, 14px) 0 0;
+  font-size: clamp(10.5px, 1.05vw, 15px);
+  line-height: 1.55;
+  color: #5f5952;
+}
+.coverflow-rule {
+  display: block;
+  width: clamp(34px, 3.8vw, 62px);
+  height: 1px;
+  margin: clamp(10px, 1vw, 16px) auto 0;
+  background: var(--card-accent, #8f6d2c);
+  opacity: .55;
+}
+
+/* The two controls ride on the sides of the row, over the outer cards. */
+.coverflow-btn {
+  position: absolute;
+  /* Centred on the row of cards, not on the frame - the frame now runs on
+     past them to give the lift and the shadows room. */
+  top: calc(var(--cf-lift-room) + (var(--cf-h) + var(--cf-arc)) / 2);
+  z-index: 5;
+  translate: 0 -50%;
+  width: clamp(42px, 3.6vw, 54px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, .7);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .9);
+  color: var(--gold-dark);
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(74, 52, 28, .22);
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease), scale var(--dur) var(--ease-spring),
+    box-shadow var(--dur) var(--ease);
+}
+.coverflow-prev {
+  inset-inline-start: clamp(10px, 3vw, 52px);
+}
+.coverflow-next {
+  inset-inline-end: clamp(10px, 3vw, 52px);
+}
+.coverflow-btn:hover,
+.coverflow-btn:focus-visible {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #fff;
+  scale: 1.08;
+  box-shadow: 0 14px 30px rgba(143, 109, 44, .32);
+}
+.coverflow-btn:active {
+  scale: .95;
+}
+.coverflow-btn .ui-icon {
+  width: 18px;
+  height: 18px;
+}
+[dir=rtl] .coverflow-btn .ui-icon {
+  transform: scaleX(-1);
+}
+
+/* ============================================================
+   8. Contact: map + form - brief S14
+   ============================================================ */
+/* The form and the map read as one unit, so their frames start and end level
+   rather than each stopping wherever its own content runs out. */
+.two-col {
+  align-items: stretch;
+}
+
+/* Contact only - booking has its own layout and opts out via .booking-layout.
+   The two panels stretch to the same height so their frames stay level, which
+   left the shorter form with a band of dead space under its button. The form
+   now fills its panel and the notes box takes up the slack, so the space goes
+   into something usable and the button ends up on the panel's bottom edge
+   rather than floating in the middle of it. */
+.two-col:not(.booking-layout) > .panel:not(.map-card),
+.two-col:not(.booking-layout) > .panel:not(.map-card) form {
+  display: flex;
+  flex-direction: column;
+}
+.two-col:not(.booking-layout) > .panel:not(.map-card) form {
+  flex: 1;
+}
+.two-col:not(.booking-layout) .form-grid {
+  flex: 1;
+  /* name, the email/phone pair, the service select, then notes with the rest */
+  grid-template-rows: auto auto auto 1fr;
+}
+.two-col:not(.booking-layout) .form-grid .field:last-child {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.two-col:not(.booking-layout) .form-grid .field:last-child textarea {
+  flex: 1;
+  height: auto;
+  min-height: 120px;
+}
+.map-card {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.map-card .location-info {
+  flex: 1;
+}
+.map-frame {
+  position: relative;
+  padding: 14px;
+  background: linear-gradient(140deg,
+      rgba(191, 149, 67, .3), rgba(234, 217, 178, .08) 45%, rgba(191, 149, 67, .24));
+}
+.map-embed {
+  display: block;
+  width: 100%;
+  height: 400px;
+  border: 0;
+  border-radius: 18px;
+  filter: sepia(.34) saturate(.72) contrast(1.03) brightness(1.02);
+  transition: filter 600ms var(--ease-out);
+}
+.map-frame:hover .map-embed,
+.map-frame:focus-within .map-embed {
+  filter: sepia(.08) saturate(1) contrast(1);
+}
+/* Everything above the frame is decoration: it must never eat a drag. */
+.map-veil,
+.map-pin,
+.map-chip {
+  pointer-events: none;
+}
+.map-veil {
+  position: absolute;
+  inset: 14px;
+  border-radius: 18px;
+  background:
+    radial-gradient(120% 90% at 50% 115%, rgba(191, 149, 67, .3), rgba(191, 149, 67, 0) 58%),
+    linear-gradient(180deg, rgba(252, 246, 242, .38), rgba(252, 246, 242, 0) 38%);
+  transition: opacity 600ms var(--ease-out);
+}
+.map-frame:hover .map-veil,
+.map-frame:focus-within .map-veil {
+  opacity: .3;
+}
+.map-pin {
+  position: absolute;
+  left: 50%;
+  top: 47%;
+  width: 18px;
+  height: 18px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: var(--gold-dark);
+  box-shadow: 0 0 0 5px rgba(191, 149, 67, .3), 0 6px 14px rgba(0, 0, 0, .28);
+  animation: soft-float 3.8s ease-in-out infinite;
+}
+.map-pin::before,
+.map-pin::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 62px;
+  height: 62px;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  animation: pin-ping 2.8s var(--ease-out) infinite;
+}
+.map-pin::after {
+  animation-delay: 1.4s;
+}
+.map-chip {
+  position: absolute;
+  inset-inline-start: 28px;
+  top: 28px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .9);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 12px 26px rgba(92, 64, 39, .16);
+  animation: soft-float 7s ease-in-out infinite;
+}
+.map-chip strong {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--gold-dark);
+}
+.map-chip span {
+  font-size: 12px;
+  color: var(--muted);
+}
+/* Sits clear of the attribution strip the map draws along its own bottom. */
+.map-open {
+  position: absolute;
+  inset-inline-end: 28px;
+  bottom: 46px;
+  height: 42px;
+  padding: 0 20px;
+  font-size: 13px;
+}
+.location-info {
+  position: relative;
+}
+.hour-row {
+  border-radius: 10px;
+  padding: 6px 10px;
+  margin-inline: -10px;
+  transition: background-color var(--dur) var(--ease);
+}
+.hour-row:hover {
+  background: #fbf4ea;
+}
+
+/* ============================================================
+   8d. Forms - fields and dropdowns
+   One shape and one highlight across every control: the same
+   corner radius, the same ring, the same underline.
+   ============================================================ */
+:root {
+  --field-radius: 12px;
+}
+.field input,
+.field textarea,
+.select-trigger,
+.select-menu {
+  border-radius: var(--field-radius);
+}
+/* Form controls are inline-block by default, which leaves a few pixels of
+   baseline descender space underneath them inside the field. On the notes box
+   that gap was 9px, and since the underline is pinned to the bottom of the
+   field it was floating clear of the control instead of sitting on its edge
+   the way it does on every other input. */
+.field input,
+.field select,
+.field textarea {
+  display: block;
+}
+
+/* The underline belongs to hover alone. Focus is said by the ring around the
+   control (see animations.css), and a line along the bottom edge at the same
+   time only competed with it - so the line draws in under the pointer and is
+   gone by the time the field is being typed in. */
+.field {
+  position: relative;
+}
+.field::after {
+  content: '';
+  position: absolute;
+  /* Held in from both sides. Running the line the full width would take it out
+     to the field's rounded corners, where it reads as a box edge rather than a
+     highlight - it belongs under the text, not under the whole control. */
+  inset-inline: 14px;
+  bottom: 0;
+  height: 2px;
+  /* A pill value, so the radius is always half the height whatever it is. */
+  border-radius: 999px;
+  pointer-events: none;
+  /* Full strength through the middle and dissolving at both ends, so the line
+     has no blunt edge where it stops. */
+  background: linear-gradient(90deg,
+    rgba(191, 149, 67, 0) 0%, var(--gold-dark) 24%,
+    var(--gold-dark) 76%, rgba(191, 149, 67, 0) 100%);
+  /* Grown from the centre out, which is symmetric and so needs no RTL flip. */
+  transform: scaleX(0);
+}
+.field:hover::after {
+  transform: scaleX(1);
+}
+/* After the hover rule, and at the same specificity, so focus always wins:
+   the moment the field takes focus the line retracts and leaves the ring. */
+.field:focus-within::after {
+  transform: scaleX(0);
+}
+
+.field:focus-within input,
+.field:focus-within textarea,
+.field:focus-within .select-trigger {
+  border-color: var(--gold);
+  background-color: #fff;
+  box-shadow: 0 0 0 4px rgba(191, 149, 67, .14), 0 8px 20px rgba(92, 64, 39, .08);
+}
+
+/* Date and time are native pickers - the panel they open belongs to the
+   browser and cannot be restyled - but the field itself is made to match the
+   dropdown exactly: same height, same corners, same inset icon in the same
+   place, and the whole field opens the picker (see js/select.js). */
+.field input[type=date],
+.field input[type=time] {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-inline-end: 48px;
+  background-repeat: no-repeat;
+  background-size: 17px;
+  background-position: right 18px center;
+  cursor: pointer;
+}
+[dir=rtl] .field input[type=date],
+[dir=rtl] .field input[type=time] {
+  background-position: left 18px center;
+}
+.field input[type=date] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238f6d2c' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M8 3v4M16 3v4M3 10h18'/%3E%3C/svg%3E");
+}
+.field input[type=time] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238f6d2c' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l4 2'/%3E%3C/svg%3E");
+}
+/* The browser's own indicator is covered by ours; it stays in place, stretched
+   across the field, so a click anywhere still reaches it. */
+.field input[type=date]::-webkit-calendar-picker-indicator,
+.field input[type=time]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.field input[type=date]::-webkit-inner-spin-button,
+.field input[type=time]::-webkit-inner-spin-button {
+  display: none;
+}
+
+/* The dropdown. The native control keeps the value and the form wiring; it is
+   just not what anyone sees or reaches. */
+.select {
+  position: relative;
+}
+.select-native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  pointer-events: none;
+}
+.select-trigger {
+  width: 100%;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 18px;
+  border: 1px solid #ddcfc4;
+  background: var(--field);
+  color: #666;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.select-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.select-caret {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  color: var(--gold-dark);
+  /* The chevron is not mirrored inside the caret, so it points the same way in
+     both directions: a quarter turn puts it down, three quarters puts it up
+     when the menu is open. No RTL branch - that is what had it pointing up
+     while shut in Arabic. */
+  rotate: 90deg;
+}
+.select-caret .ui-icon {
+  width: 15px;
+  height: 15px;
+}
+.select.is-open .select-caret {
+  rotate: 270deg;
+}
+.select.is-open .select-trigger {
+  border-color: var(--gold);
+  background: #fff;
+}
+
+.select-menu {
+  position: absolute;
+  z-index: 30;
+  inset-inline: 0;
+  top: calc(100% + 8px);
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 18px 40px rgba(92, 64, 39, .16);
+  /* Folded away: it grows out of the top edge and fades in. */
+  transform-origin: top center;
+  opacity: 0;
+  transform: scaleY(.86) translateY(-6px);
+}
+.select.is-open .select-menu {
+  opacity: 1;
+  transform: none;
+}
+.select-option {
+  padding: 11px 14px;
+  border-radius: calc(var(--field-radius) - 4px);
+  color: var(--ink);
+  cursor: pointer;
+}
+.select-option:hover {
+  background: #fbf3e8;
+}
+.select-option.is-selected {
+  background: var(--gold);
+  color: #fff;
+}
+/* Nothing chosen yet reads as a placeholder, not as a value. */
+.select-value.is-empty {
+  color: #a49b91;
+}
+/* The calendar and clock sit still - only the dropdown's chevron turns over. */
+.select-caret.is-static {
+  rotate: none;
+}
+.select.is-open .select-caret.is-static {
+  rotate: none;
+  color: var(--gold);
+}
+
+/* The date picker's month, and the time picker's list. Both live in the same
+   .select-menu as the dropdown, so the frame, corners, shadow and fold-open
+   are literally the same rules. */
+.select-menu-cal {
+  padding: 12px;
+  width: max(100%, 292px);
+}
+.cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.cal-head strong {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--gold-dark);
+}
+.cal-nav {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--gold-dark);
+  cursor: pointer;
+}
+.cal-nav:hover,
+.cal-nav:focus-visible {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #fff;
+}
+.cal-nav .ui-icon {
+  width: 14px;
+  height: 14px;
+}
+[dir=rtl] .cal-nav .ui-icon {
+  transform: scaleX(-1);
+}
+.cal-week,
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.cal-week {
+  margin-bottom: 4px;
+}
+.cal-week span {
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.cal-day {
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.cal-day:hover:not(:disabled) {
+  background: #fbf3e8;
+}
+.cal-day.is-today:not(.is-selected) {
+  color: var(--gold-dark);
+  box-shadow: inset 0 0 0 1px var(--gold-pale);
+}
+.cal-day.is-selected {
+  background: var(--gold);
+  color: #fff;
+}
+.cal-day:disabled {
+  color: #cdc5bd;
+  cursor: default;
+}
+
+.select-menu-times {
+  max-height: 248px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* ============================================================
+   8b. Booking page
+   The clinic photograph and "what to expect" are one card, built
+   to the same rhythm as the form panel opposite it.
+   ============================================================ */
+body[data-page=booking] .page-hero {
+  padding-bottom: 26px;
+}
+.booking-section {
+  padding-top: 28px;
+}
+/* The left column is nothing but the card now, and both columns stretch, so
+   the two frames start and finish on the same lines. */
+.booking-layout > div:first-child {
+  display: flex;
+  flex-direction: column;
+}
+.booking-intro {
+  padding: 0;
+  overflow: hidden;
+  flex: 1 1 auto;
+}
+.booking-section .trust-row {
+  margin-top: 32px;
+}
+.booking-intro .clinic-photo {
+  display: block;
+  height: 300px;
+  border-radius: 0;
+}
+.booking-intro .expect {
+  margin: 0;
+  padding: 34px 42px 40px;
+  /* Hovering the list warms the whole block and steps each row forward. */
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+.booking-intro .expect:hover {
+  background: linear-gradient(180deg, rgba(191, 149, 67, .09), rgba(191, 149, 67, .02));
+}
+.booking-intro .expect li {
+  border-radius: 12px;
+  padding: 6px 10px;
+  margin-inline: -10px;
+}
+.booking-intro .expect:hover li:hover {
+  background: rgba(255, 255, 255, .75);
+  translate: calc(6px * var(--dir, 1)) 0;
+}
+.booking-intro .expect:hover .icon-badge {
+  background: linear-gradient(140deg, var(--gold), var(--gold-dark));
+}
+.booking-intro .expect:hover .icon-badge img {
+  filter: brightness(0) invert(1);
+}
+.booking-intro .expect h2 {
+  font-size: 32px;
+  margin: 0 0 24px;
+}
+.booking-intro .expect ul {
+  margin: 0;
+}
+.booking-intro .expect li:last-child {
+  margin-bottom: 0;
+}
+
+/* ============================================================
+   8c. Contact cards
+   ============================================================ */
+/* Left, literally, in both languages - not `start`. What these cards hold is
+   left-to-right data (numbers, addresses, handles), and in Arabic `start`
+   would push it to the right edge and split it from its heading. */
+.contact-card {
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+}
+.contact-card p,
+.contact-card strong,
+.contact-card .icon-badge {
+  text-align: left;
+}
+/* Physical margins, not logical: the badge has a fixed width, so text-align
+   cannot place it, and a logical margin would send it back to the right in
+   Arabic - away from the details it belongs to. */
+.contact-card .icon-badge {
+  margin-left: 0;
+  margin-right: auto;
+}
+.contact-card a {
+  display: inline-block;
+}
+/* Hover warms the card from the leading corner and lights the icon. */
+.contact-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  border-radius: inherit;
+  background: radial-gradient(130% 110% at 0% 0%, rgba(191, 149, 67, .2), rgba(191, 149, 67, 0) 62%);
+}
+.contact-card {
+  isolation: isolate;
+}
+.contact-card:hover::before,
+.contact-card:focus-within::before {
+  opacity: 1;
+}
+.contact-card:hover .icon-badge,
+.contact-card:focus-within .icon-badge {
+  background: linear-gradient(140deg, var(--gold), var(--gold-dark));
+  border-color: var(--gold-dark);
+}
+.contact-card:hover .icon-badge img,
+.contact-card:focus-within .icon-badge img {
+  filter: brightness(0) invert(1);
+}
+.contact-card .icon-badge img {
+  transition: filter var(--dur-slow) var(--ease);
+}
+
+/* ============================================================
+   9. About page
+   ============================================================ */
+.about-timeline {
+  position: relative;
+}
+/* Hovering an entry in the professional journey grows it a little. It has to
+   be the individual `scale` property: these entries are reveal targets, and
+   `[data-anim].is-in { transform: none }` outranks any hover rule written
+   against `transform`, which is why growing them that way did nothing. */
+/* Equal rows, so the four entries are the same height whatever their titles
+   do. The grid also keeps the gap even once one of them grows. */
+.about-timeline {
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: 4px;
+}
+.about-timeline article {
+  transform-origin: 0 50%;
+  isolation: isolate;
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-inline-start: -18px;
+}
+[dir=rtl] .about-timeline article {
+  transform-origin: 100% 50%;
+}
+/* The wash is a layer of its own rather than a background on the entry: a
+   gradient cannot be interpolated between two values, so animating it directly
+   would snap on and off instead of easing. Fading a layer in is smooth. */
+.about-timeline article::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  border-radius: inherit;
+  background: linear-gradient(115deg,
+      rgba(255, 255, 255, .97) 0%,
+      rgba(250, 241, 227, .95) 48%,
+      rgba(234, 217, 178, .68) 100%);
+  box-shadow: 0 18px 40px rgba(92, 64, 39, .16);
+}
+/* Lifted out of the list: it grows, the wash comes up under it, and its marker
+   fills gold. */
+.about-timeline article:hover {
+  scale: 1.06;
+}
+.about-timeline article:hover::before {
+  opacity: 1;
+}
+.about-timeline article:hover strong {
+  color: var(--gold-dark);
+}
+.about-timeline article:hover b,
+.about-timeline article:hover small {
+  color: var(--gold-dark);
+}
+.timeline-dot {
+  transition: transform var(--dur) var(--ease-spring), background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.about-timeline article:hover .timeline-dot {
+  transform: scale(1.8);
+  border-color: var(--gold-dark);
+  box-shadow: 0 0 0 6px rgba(191, 149, 67, .22);
+  background: var(--gold);
+}
+.about-timeline article:hover strong {
+  color: var(--gold-dark);
+}
+.about-timeline article strong {
+  transition: color var(--dur) var(--ease);
+}
+.doctor-quote {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(150deg, #99722a, #866321 55%, #6f5119);
+  --card-motion: translate var(--dur-slow) var(--ease-spring),
+    box-shadow var(--dur-slow) var(--ease);
+  transition: var(--card-motion);
+  --anim-extra: var(--card-motion);
+}
+.doctor-quote::after {
+  content: '';
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border: 20px solid rgba(255, 255, 255, .1);
+  border-radius: 50%;
+  inset-inline-start: -90px;
+  bottom: -110px;
+  animation: soft-float 10s ease-in-out infinite;
+}
+.doctor-quote > * {
+  position: relative;
+}
+.doctor-quote > span {
+  animation: soft-float 6s ease-in-out infinite;
+}
+.doctor-quote:hover {
+  translate: 0 -6px;
+  box-shadow: 0 28px 54px rgba(92, 64, 39, .26);
+}
+.education-card,
+.contribution-card,
+.award-card {
+  --card-motion: translate var(--dur-slow) var(--ease-spring),
+    box-shadow var(--dur-slow) var(--ease);
+  transition: var(--card-motion);
+  --anim-extra: var(--card-motion);
+}
+.education-card:hover,
+.award-card:hover,
+.contribution-card:hover {
+  translate: 0 -6px;
+  box-shadow: 0 26px 50px rgba(92, 64, 39, .16);
+}
+.award-icon {
+  animation: soft-float 5.5s ease-in-out infinite;
+}
+.about-clinic,
+.clinic-photo {
+  box-shadow: 0 20px 44px rgba(92, 64, 39, .14);
+}
+/* The years-of-experience badge, hovering over the corner of the clinic
+   photograph and drifting on its own. */
+.about-clinic-frame {
+  position: relative;
+  margin-top: 30px;
+}
+.about-clinic-frame .about-clinic {
+  margin-top: 0;
+}
+.about-badge {
+  position: absolute;
+  inset-inline-end: -14px;
+  bottom: -26px;
+  min-width: 132px;
+  padding: 16px 22px;
+  border-radius: 18px;
+  text-align: center;
+  color: #fff;
+  background: linear-gradient(140deg, #c19647, #8f6d2c 60%, #7c5e25);
+  box-shadow: 0 20px 40px rgba(92, 64, 39, .3);
+  animation: soft-float 6.5s ease-in-out infinite;
+}
+.about-badge b {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 30px;
+  line-height: 1;
+}
+.about-badge span {
+  display: block;
+  margin-top: 5px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .85);
+}
+@media (max-width: 600px) {
+  .about-badge {
+    inset-inline-end: 8px;
+    bottom: -20px;
+    min-width: 112px;
+    padding: 12px 16px;
+  }
+  .about-badge b {
+    font-size: 24px;
+  }
+}
+
+/* ============================================================
+   9b. Case cards - hover highlight, "view details", fuller view
+   ============================================================ */
+/* The photograph at the top of the card is a working before/after slider, so
+   the highlight stays off it: the colour floods the caption instead, a gold
+   rule draws across the top of it, and a ring lights the frame. */
+.work-card {
+  isolation: isolate;
+  /* Transparent to begin with, so lighting it on hover shifts nothing. */
+  border: 1px solid transparent;
+}
+.work-card:hover,
+.work-card:focus-within {
+  border-color: rgba(191, 149, 67, .55);
+}
+.work-card-content {
+  position: relative;
+  isolation: isolate;
+}
+.work-card-content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  background: linear-gradient(135deg,
+      rgba(191, 149, 67, .17) 0%,
+      rgba(234, 217, 178, .07) 55%,
+      rgba(191, 149, 67, .15) 100%);
+}
+.work-card:hover .work-card-content::before,
+.work-card:focus-within .work-card-content::before {
+  opacity: 1;
+}
+/* A gold rule drawing in from the reading edge. */
+.work-card-content::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold-pale));
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+[dir=rtl] .work-card-content::after {
+  transform-origin: 100% 50%;
+  background: linear-gradient(270deg, var(--gold-dark), var(--gold-pale));
+}
+.work-card:hover .work-card-content::after,
+.work-card:focus-within .work-card-content::after {
+  transform: scaleX(1);
+}
+.work-card:hover h3,
+.work-card:focus-within h3 {
+  color: var(--gold-dark);
+}
+.work-card:hover .case-more {
+  color: var(--gold);
+}
+
+.case-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 16px;
+  padding: 0 0 5px;
+  border: 0;
+  background: none;
+  color: var(--gold-dark);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.case-more:hover,
+.case-more:focus-visible {
+  color: var(--gold);
+}
+
+body.has-modal {
+  overflow: hidden;
+}
+/* The dialog fades up rather than appearing outright: the backdrop washes in
+   and the card rises the last few pixels behind it. */
+.case-modal {
+  /* Clear of the fixed bar, and off the bottom of the screen. */
+  padding: calc(var(--header-h) + 26px) 24px 34px;
+  align-content: start;
+  background: rgba(38, 37, 34, .55);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+}
+.case-modal.is-shown {
+  opacity: 1;
+}
+.case-modal-card {
+  max-width: 940px;
+  width: 100%;
+  max-height: calc(100vh - var(--header-h) - 60px);
+  overflow: auto;
+  padding: 0;
+  border-radius: 24px;
+  opacity: 0;
+  translate: 0 22px;
+  scale: .98;
+}
+.case-modal.is-shown .case-modal-card {
+  opacity: 1;
+  translate: 0 0;
+  scale: 1;
+}
+/* The close control sits over the photographs, so it carries its own disc
+   rather than relying on whatever it happens to be sitting on. */
+.case-modal-card .modal-close {
+  z-index: 2;
+  inset-block-start: 16px;
+  inset-inline-end: 16px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .92);
+  color: var(--ink);
+  box-shadow: 0 8px 20px rgba(38, 37, 34, .28);
+}
+.case-modal-card .modal-close:hover,
+.case-modal-card .modal-close:focus-visible {
+  background: var(--gold);
+  color: #fff;
+}
+
+.case-modal-media {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  background: var(--line);
+}
+.case-shot {
+  position: relative;
+  margin: 0;
+}
+.case-shot img {
+  display: block;
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+}
+.case-shot figcaption {
+  position: absolute;
+  inset-inline-start: 14px;
+  bottom: 14px;
+  padding: 4px 12px;
+  border-radius: 14px;
+  background: rgba(85, 85, 85, .72);
+  color: #fff;
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.case-shot figcaption.is-after {
+  background: var(--gold-dark);
+}
+.case-modal-body {
+  padding: 32px 38px 38px;
+}
+.case-modal-body h2 {
+  font-size: 34px;
+  margin: 10px 0 12px;
+}
+.case-modal-body > p {
+  margin: 0;
+  color: var(--muted);
+  max-width: 62ch;
+}
+.case-facts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin: 26px 0 0;
+  padding: 22px 0 0;
+  border-top: 1px solid var(--line);
+}
+.case-facts dt {
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--gold-dark);
+}
+.case-facts dd {
+  margin: 6px 0 0;
+  font-family: var(--font-ui);
+  font-size: 17px;
+}
+.case-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 28px;
+}
+@media (max-width: 700px) {
+  .case-modal-media {
+    grid-template-columns: 1fr;
+  }
+  .case-shot img {
+    height: 210px;
+  }
+  .case-modal-body {
+    padding: 24px 24px 30px;
+  }
+  .case-modal-body h2 {
+    font-size: 26px;
+  }
+  .case-facts {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+/* ============================================================
+   9c. Booking / message confirmation
+   ============================================================ */
+.done-modal {
+  padding: calc(var(--header-h) + 26px) 24px 34px;
+  background: rgba(38, 37, 34, .55);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+}
+.done-modal.is-shown {
+  opacity: 1;
+}
+.done-card {
+  max-width: 440px;
+  padding: 46px 38px 38px;
+  border-radius: 24px;
+  text-align: center;
+  opacity: 0;
+  translate: 0 20px;
+  scale: .97;
+}
+.done-modal.is-shown .done-card {
+  opacity: 1;
+  translate: 0 0;
+  scale: 1;
+}
+/* Success reads green, not brand gold - a confirmation should say "done", not
+   "here is more of the same". */
+.done-card {
+  --ok: #2e8b57;
+  --ok-dark: #1f6b41;
+}
+.done-mark {
+  width: 68px;
+  height: 68px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 22px;
+  border-radius: 50%;
+  color: #fff;
+  background: linear-gradient(140deg, #3aa76d, var(--ok-dark));
+  box-shadow: 0 14px 30px rgba(31, 107, 65, .3);
+}
+.done-mark svg {
+  width: 30px;
+  height: 30px;
+}
+/* The tick draws itself on rather than simply being there. */
+.done-mark path {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+}
+.done-modal.is-shown .done-mark path {
+  stroke-dashoffset: 0;
+}
+.done-card h2 {
+  margin: 0 0 10px;
+  font-size: 28px;
+  color: var(--ok-dark);
+}
+.done-card p {
+  margin: 0;
+  color: var(--muted);
+}
+/* A faint green wash up from the foot of the card, so the whole dialog reads
+   as the confirmation rather than just its badge. */
+.done-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(46, 139, 87, .07), rgba(46, 139, 87, .01) 62%);
+}
+.done-card {
+  position: relative;
+  isolation: isolate;
+}
+.done-ok {
+  margin-top: 28px;
+  min-width: 160px;
+  background: var(--ok);
+  border-color: var(--ok);
+  color: #fff;
+}
+.done-ok:hover,
+.done-ok:focus-visible {
+  background: var(--ok-dark);
+  border-color: var(--ok-dark);
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(31, 107, 65, .3);
+}
+.done-card .modal-close:hover,
+.done-card .modal-close:focus-visible {
+  color: var(--ok-dark);
+}
+
+/* ============================================================
+   10. Case detail page
+   ============================================================ */
+.stat {
+  --card-motion: translate var(--dur) var(--ease-spring);
+  transition: var(--card-motion);
+  --anim-extra: var(--card-motion);
+}
+.stat:hover {
+  translate: 0 -4px;
+}
+.stat:hover strong {
+  color: var(--gold-dark);
+}
+.stat strong {
+  transition: color var(--dur) var(--ease);
+}
+.step {
+  --card-motion: translate var(--dur-slow) var(--ease-spring);
+  transition: var(--card-motion);
+  --anim-extra: var(--card-motion);
+}
+.step:hover {
+  translate: 0 -6px;
+}
+
+.details-cta {
+  padding-top: 96px;
+  /* Air between the last band and the footer, so they do not butt together. */
+  padding-bottom: 96px;
+}
+.about-cta {
+  margin-top: 34px;
+}
+.cta-band {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  padding: 46px 50px;
+  border-radius: 26px;
+  color: #fff;
+  background: linear-gradient(130deg, #bd9343, #8f6d2c 58%, #7c5e25);
+  box-shadow: 0 28px 58px rgba(92, 64, 39, .28);
+}
+.cta-band::before {
+  content: '';
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border: 26px solid rgba(255, 255, 255, .12);
+  border-radius: 50%;
+  inset-inline-end: -110px;
+  top: -150px;
+  animation: soft-float 9s ease-in-out infinite;
+}
+.cta-band > * {
+  position: relative;
+}
+.cta-band h2 {
+  font-size: 34px;
+  margin: 0 0 10px;
+}
+.cta-band p {
+  margin: 0;
+  color: rgba(255, 255, 255, .84);
+  max-width: 52ch;
+}
+.cta-band .btn {
+  flex: 0 0 auto;
+  background: #fff;
+  color: var(--gold-dark);
+  border-color: #fff;
+}
+.cta-band .btn:hover,
+.cta-band .btn:focus-visible {
+  background: var(--ivory);
+  color: var(--gold-dark);
+}
+
+/* ============================================================
+   11. Responsive
+   ============================================================ */
+/* The hero stacks well before the rest of the layout does. Its desktop form
+   puts the photograph down the left and the copy in a column on the right,
+   which needs real width to work: by the time the window is around 1000px the
+   copy is squeezed into a narrow right-hand column with half the screen empty
+   beside it, and the whole hero reads as shoved off the left edge. Below this
+   width both slides go to one centred column. The 900px block further down
+   keeps the finer phone tuning. */
+@media (max-width: 1080px) {
+  .hero-inner {
+    grid-template-columns: 1fr;
+  }
+  .hero-copy {
+    grid-column: 1;
+    text-align: center;
+    margin: auto;
+    max-width: 560px;
+    /* The desktop copy is indented off the column it shares with the photo.
+       Centred, that indent only pushes it to one side. */
+    padding-inline: 0;
+  }
+  /* Enough to clear the tooth in the photograph behind it. */
+  .hero-inner .hero-copy {
+    padding-block: 34vh 0;
+  }
+  .hero-place-inner {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .hero-video-wrap {
+    max-width: 520px;
+    margin-inline: auto;
+    width: 100%;
+  }
+  /* Same cap as the frame above it, so the headline, the blurb and the buttons
+     all share the video's edges rather than sticking out past them. */
+  .hero-place-copy {
+    max-width: 520px;
+  }
+  /* Both of these are positioned for the two-column hero, where the copy never
+     reaches the bottom of the screen. Stacked, it does: the dots sat on top of
+     the buttons and the scroll cue was a few pixels under them. The cue goes -
+     a stacked hero already fills the screen, so there is nothing to hint at -
+     and the dots drop to the bottom edge, clear of the content. */
+  .hero-scroll {
+    display: none;
+  }
+  .hero-slider-nav {
+    bottom: 30px;
+  }
+}
+
+@media (max-width: 900px) {
+  /* --header-h must equal the bar's real height - 20px padding, a 66px shell,
+     20px padding - or the pages that reserve it will sit under the header. */
+  :root {
+    --header-h: 106px;
+  }
+  /* The dropdown is absolutely positioned and used to resolve against the
+     header. The shell's backdrop-filter makes it a containing block, so the
+     panel now hangs off the shell instead - restated against it so it still
+     lines up with the bar's edges and clears its bottom by the same margin,
+     whatever padding the header carries at this width. */
+  .main-nav {
+    top: calc(100% + 10px);
+    inset-inline: 0;
+  }
+  .hero {
+    padding-bottom: 90px;
+  }
+  /* Slide two stacks from 1080px up in the block above; the controls move off
+     the corner and centre under everything, clear of the scroll cue. */
+  /* A 4:3 frame eats too much of a phone screen once the copy is stacked under
+     it, and the hero then runs past one screenful. Wider and shorter keeps the
+     whole slide - video, headline, blurb, buttons - visible at once. */
+  .hero-video {
+    aspect-ratio: 16 / 10;
+  }
+  /* The arch reserves a strip down its side for the badges to hang into. On a
+     phone that strip is just a gap between the photo and the screen edge with
+     a card floating in it, so the padding comes off, the photo takes the full
+     width, and the badges sit on the picture instead. */
+  .about-arch,
+  [dir=rtl] .about-arch {
+    /* All of it goes, bottom included: the padding exists so the badges can
+       hang off the frame's corners, and here they sit on the photo instead.
+       Leaving the bottom strip would drop the lower badge off the picture. */
+    padding: 0;
+    /* At full container width the 4:5 frame ran to well over half the screen
+       and pushed the copy below it out of view. Capped and centred - the cap
+       goes on the arch, not the frame, so the badges and the ring behind it
+       come down with it.
+
+       width is spelled out because the auto margins stop this grid item from
+       stretching, and the frame inside has no width of its own to fall back
+       on - the photo is width:100% of it, so it would collapse to nothing. */
+    width: 100%;
+    max-width: 300px;
+    margin-inline: auto;
+  }
+  .about-float-years {
+    inset-inline-end: 10px;
+    top: 10px;
+    padding: 16px 20px;
+  }
+  .about-float-years b {
+    font-size: 24px;
+  }
+  .about-float-care {
+    inset-inline-start: 10px;
+    bottom: 10px;
+    padding: 12px 16px 12px 12px;
+  }
+
+  /* There is no room beside the frame at this width, so the badges move onto
+     its corners rather than hanging off them and being clipped. */
+  .hero-place-badge {
+    padding: 11px 16px 11px 11px;
+  }
+  .hero-place-badge-a {
+    inset-inline-start: 12px;
+    top: 12px;
+  }
+  .hero-place-badge-b {
+    inset-inline-end: 12px;
+    bottom: 12px;
+  }
+  /* Slide one only. The photograph owns more of the screen at this width, so
+     the copy needs more clearance than the 1080px block gives it. Slide two's
+     copy carries the same class but has a video above it, not the photograph,
+     and must not inherit any of this. */
+  .hero-inner .hero-copy {
+    padding-block: 40vh 0;
+  }
+  .hero-halo {
+    left: 50%;
+    top: 14%;
+    translate: -50% 0;
+    width: min(70vw, 380px);
+  }
+  /* Only the height changes here - a phone hero is taller relative to its
+     width, so the fade gets more of it. The eased ramp itself is inherited;
+     this used to redefine it as three stops, which put the banded edge back. */
+  .hero-fade {
+    height: 52%;
+  }
+  html[lang=ar] .hero-stage {
+    transform: none;
+  }
+  /* The stage is not mirrored at this width, so the chips must not be
+     counter-flipped either - doing it anyway is what had the Arabic running
+     backwards on a phone. */
+  html[lang=ar] .hero-chip {
+    scale: none;
+  }
+  /* A narrow frame crops far more off the sides. The tooth sits in the left
+     quarter of the shot, so the visible window has to be pulled back to it -
+     this lands the tooth in the middle of a phone screen. */
+  .hero-photo {
+    background-position: 14% center;
+  }
+  /* Still one row at this width - wrapping would strand a card alone on a line
+     and stretch it. The expansion just asks for less, and the photograph is
+     narrower to match. */
+  .cards-4 {
+    --svc-open: 4;
+    --svc-detail: 150px;
+  }
+  /* The text column is narrower here, so the description runs to more lines
+     and the cards need a little more room to hold it without the row growing. */
+  .service-card {
+    min-height: 300px;
+  }
+
+  /* Tablet: about three cards across. */
+  .coverflow-section {
+    --cf-w: 34vw;
+    --cf-gap: 14px;
+    --cf-shadow-room: 42px;
+    padding-bottom: 34px;
+  }
+  .coverflow-head {
+    padding: 30px 0 28px;
+  }
+  .cta-band {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 36px 32px;
+  }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --header-h: 90px;
+  }
+  .site-header {
+    padding: 12px 0;
+  }
+  .hero {
+    padding-bottom: 76px;
+  }
+  /* Slide one only, same reason as at 900px: slide two has a video above its
+     copy, not the photograph, and does not want clearing. Enough to clear the
+     tooth without pushing the headline off the bottom of a phone. */
+  .hero-inner .hero-copy {
+    padding-top: 34vh;
+  }
+  /* One card per row, so the panel opens downward instead of sideways -
+     there is no width left to open into. */
+  .cards-4 {
+    flex-direction: column;
+  }
+  .service-card {
+    min-height: 0;
+    flex: 0 0 auto;
+    flex-direction: column;
+  }
+  .service-card.is-open {
+    flex-basis: auto;
+  }
+  /* The photograph is out of flow, so the panel needs a height of its own -
+     max-height still does the animating, clamping that height to nothing while
+     the card is shut. */
+  .service-detail {
+    width: auto;
+    height: 200px;
+    max-height: 0;
+  }
+  .service-card.is-open .service-detail {
+    width: auto;
+    max-height: 200px;
+    margin-inline-start: 0;
+    margin-block-start: 20px;
+  }
+  .service-detail-inner {
+    inset-inline: 0;
+    width: auto;
+  }
+  .service-card.is-open .service-detail-inner {
+    translate: 0 0;
+  }
+  /* Stacked, the other cards keep their full width, so there is no reason to
+     squeeze them - they hold on to their blurb, their number and their type
+     size, and only the open one changes. */
+  .cards-4.has-open .service-card:not(.is-open) {
+    padding-inline: 26px;
+    opacity: 1;
+  }
+  .cards-4.has-open .service-card:not(.is-open) .service-main > p:not(.service-more) {
+    max-height: 150px;
+    opacity: 1;
+  }
+  .cards-4.has-open .service-card:not(.is-open) h3 {
+    font-size: 21px;
+  }
+  .cards-4.has-open .service-card:not(.is-open)::after {
+    opacity: 1;
+  }
+  /* Nothing to step around: the photograph is below, not beside. */
+  .service-card.is-open .service-toggle {
+    inset-inline-end: 22px;
+  }
+  /* Phone: one card with a sliver of the next. */
+  .coverflow-section {
+    --cf-w: 76vw;
+    --cf-gap: 12px;
+  }
+  .coverflow-head {
+    padding: 24px 0 24px;
+  }
+  .map-embed {
+    height: 300px;
+  }
+  .map-chip {
+    inset-inline-start: 20px;
+    top: 20px;
+    padding: 9px 13px;
+  }
+  .map-open {
+    inset-inline-end: 20px;
+    bottom: 38px;
+  }
+  .cta-band {
+    padding: 30px 24px;
+  }
+  .cta-band h2 {
+    font-size: 27px;
+  }
+}

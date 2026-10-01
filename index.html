@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title data-i18n="home.docTitle">د. علاء حجاج — طب الأسنان التجميلي</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/refinements.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/experience.css">
+  <script src="js/i18n-data.js"></script>
+  <script src="js/i18n.js"></script>
+</head>
+
+<body data-page="home">
+  <div id="site-header"></div>
+
+  <main id="main">
+    <!-- The hero runs the full viewport. Everything inside .hero-stage is
+         decoration: the photograph drifts with the pointer, the tooth in it
+         floats on a slow loop, and the sparkles twinkle around it. -->
+    <section class="hero" data-hero data-hero-slider aria-roledescription="carousel"
+      data-active="0" data-i18n-attr="aria-label:hero.slider.aria">
+
+      <!-- The two full-bleed backdrops live here rather than inside their
+           slides: a slide carries a translate/scale, which would make it the
+           containing block and stop the backdrop reaching behind the header.
+           They cross-fade with the slide, keyed off data-active. -->
+      <div class="hero-stage hero-bg" data-hero-bg="0" aria-hidden="true">
+        <div class="hero-photo"></div>
+        <div class="hero-veil"></div>
+        <span class="hero-halo"></span>
+        <span class="hero-spark" style="--x:37%;--y:22%;--s:16px;--d:0s"></span>
+        <span class="hero-spark" style="--x:29%;--y:13%;--s:11px;--d:1.1s"></span>
+        <span class="hero-spark" style="--x:44%;--y:44%;--s:13px;--d:2.2s"></span>
+        <span class="hero-spark" style="--x:24%;--y:78%;--s:9px;--d:3.1s"></span>
+        <span class="hero-spark" style="--x:48%;--y:63%;--s:12px;--d:4s"></span>
+
+        <!-- Small cards and rings drifting around the tooth. Decorative, and
+             each one floats on its own cycle so the group never pulses in
+             time with itself. -->
+        <div class="hero-chip" style="--x:33%;--y:28%;--d:.4s;--t:7.5s">
+          <span class="hero-chip-icon">
+            <svg class="ui-icon" aria-hidden="true" focusable="false">
+              <use href="#icon-care"></use>
+            </svg>
+          </span>
+          <b data-i18n="hero.chipTrust"></b>
+        </div>
+        <div class="hero-chip" style="--x:6%;--y:70%;--d:2.2s;--t:9s">
+          <span class="hero-chip-icon">
+            <svg class="ui-icon" aria-hidden="true" focusable="false">
+              <use href="#icon-smile"></use>
+            </svg>
+          </span>
+          <b data-i18n="hero.chipSmile"></b>
+        </div>
+        <span class="hero-ring" style="--x:30%;--y:56%;--s:78px;--d:0s;--t:11s"></span>
+        <span class="hero-ring" style="--x:5%;--y:52%;--s:52px;--d:2s;--t:9.5s"></span>
+        <span class="hero-dot" style="--x:36%;--y:22%;--d:1.2s;--t:6.5s"></span>
+        <span class="hero-dot" style="--x:21%;--y:85%;--d:3.4s;--t:7.8s"></span>
+      </div>
+
+      <!-- Slide 2's backdrop: a warm wash with two slow orbs, so the eye goes
+           to the video instead of competing with a second photograph. -->
+      <div class="hero-place-wash hero-bg" data-hero-bg="1" aria-hidden="true">
+        <span class="hero-place-orb hero-place-orb-a"></span>
+        <span class="hero-place-orb hero-place-orb-b"></span>
+      </div>
+
+      <!-- Shared by both, so the bottom edge always melts into the page. -->
+      <div class="hero-fade" aria-hidden="true"></div>
+
+      <div class="hero-slides">
+
+      <!-- Slide 1: the smile. -->
+      <article class="hero-slide" data-hero-slide
+        data-i18n-attr="aria-label:hero.slider.slide1">
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <h1 class="heading" data-i18n="home.h1"></h1>
+          <p data-i18n="home.lead"></p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="booking.html" data-i18n="home.ctaBook"></a>
+            <a class="btn btn-outline" href="works.html" data-i18n="home.ctaWorks"></a>
+          </div>
+        </div>
+      </div>
+      </article>
+
+      <!-- Slide 2: the place. The video sits in a gold-edged frame that drifts
+           on its own cycle, with a halo turning slowly behind it and two small
+           badges hovering off its corners - the same furniture as slide one,
+           so the two read as one hero rather than two designs. -->
+      <article class="hero-slide hero-slide-place" data-hero-slide
+        data-i18n-attr="aria-label:hero.slider.slide2">
+        <div class="container hero-place-inner">
+          <div class="hero-video-wrap">
+            <span class="hero-video-halo" aria-hidden="true"></span>
+            <div class="hero-video-frame">
+              <video class="hero-video" data-hero-video muted loop playsinline
+                preload="metadata" tabindex="-1" aria-hidden="true">
+                <source src="assets/videos/hero2.mp4" type="video/mp4">
+              </video>
+              <span class="hero-video-sheen" aria-hidden="true"></span>
+            </div>
+
+            <div class="hero-place-badge hero-place-badge-a">
+              <span class="hero-chip-icon">
+                <svg class="ui-icon" aria-hidden="true" focusable="false">
+                  <use href="#icon-shield"></use>
+                </svg>
+              </span>
+              <b data-i18n="hero.place.badgeClean"></b>
+            </div>
+            <div class="hero-place-badge hero-place-badge-b">
+              <span class="hero-chip-icon">
+                <svg class="ui-icon" aria-hidden="true" focusable="false">
+                  <use href="#icon-technology"></use>
+                </svg>
+              </span>
+              <b data-i18n="hero.place.badgeTech"></b>
+            </div>
+          </div>
+
+          <div class="hero-copy hero-place-copy">
+            <h2 class="heading" data-i18n="hero.place.title"></h2>
+            <p data-i18n="hero.place.lead"></p>
+            <!-- The same pair as slide one, same labels and destinations, so
+                 the call to action does not change under the visitor as the
+                 hero moves. -->
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="booking.html" data-i18n="home.ctaBook"></a>
+              <a class="btn btn-outline" href="works.html" data-i18n="home.ctaWorks"></a>
+            </div>
+          </div>
+        </div>
+      </article>
+      </div>
+
+      <!-- Slider control: the dots, and only the dots. Arrow keys and swipe
+           still move between slides. -->
+      <div class="hero-slider-nav">
+        <div class="hero-slider-dots" role="tablist" data-hero-dots></div>
+      </div>
+
+      <a class="hero-scroll" href="#about">
+        <span data-i18n="home.scroll"></span>
+        <span class="hero-scroll-line" aria-hidden="true"></span>
+      </a>
+    </section>
+
+    <section class="section" id="about">
+      <div class="container about-grid">
+        <!-- One photograph in an arched frame, with two objects hovering off
+             its corners. -->
+        <div class="about-arch" data-anim>
+          <div class="about-arch-frame">
+            <img src="assets/clinic-room.jpg" alt="" data-i18n-attr="alt:home.about.roomAlt"
+              loading="lazy">
+          </div>
+
+          <div class="about-float about-float-years">
+            <b data-i18n="about.badgeYears"></b>
+            <span data-i18n="about.badgeLabel"></span>
+          </div>
+
+          <div class="about-float about-float-care">
+            <span class="about-float-icon">
+              <img src="assets/tooth.svg" alt="" aria-hidden="true">
+            </span>
+            <span class="about-float-text">
+              <b data-i18n="home.about.floatTitle"></b>
+              <small data-i18n="home.about.floatBody"></small>
+            </span>
+          </div>
+
+          <span class="about-arch-ring" aria-hidden="true"></span>
+        </div>
+        <div class="about-copy">
+          <span class="eyebrow" data-anim data-i18n="home.about.eyebrow"></span>
+          <h2 class="heading" data-anim data-i18n="home.about.title"></h2>
+          <p data-anim data-i18n="home.about.body"></p>
+          <!-- The hero's secondary button, exactly: same variant, same hover
+               sheen, lift and colours. -->
+          <a class="btn btn-outline" href="about.html" data-anim>
+            <span data-i18n="home.about.link"></span>
+            <span class="btn-arrow" aria-hidden="true"></span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2 class="heading section-title" data-anim data-i18n="home.services.title"></h2>
+        <p class="section-lead" data-anim data-i18n="home.services.lead"></p>
+        <!-- Expandable row. Hovering a card opens it and the rest of the row
+             gives up its width; leaving the row closes it again. The chevron is
+             a real button so the panel is reachable from the keyboard too, and
+             it carries the aria-expanded state. Only one card is open at a
+             time - see js/services.js. -->
+        <div class="cards-4" data-services>
+          <article class="service-card" data-anim data-service>
+            <div class="service-main">
+              <span class="icon-badge">
+                <img class="service-svg-icon" src="assets/tooth.svg" alt="" aria-hidden="true">
+              </span>
+              <h3 class="heading" data-i18n="service.cosmetic.title"></h3>
+              <p data-i18n="service.cosmetic.body"></p>
+              <p class="service-more" data-i18n="service.cosmetic.more"></p>
+              <button class="service-toggle" type="button" data-service-toggle
+                aria-expanded="false" aria-controls="service-cosmetic"
+                data-i18n-attr="aria-label:service.expand">
+                <svg class="ui-icon" aria-hidden="true" focusable="false">
+                  <use href="#icon-chevron-end"></use>
+                </svg>
+              </button>
+            </div>
+            <div class="service-detail" id="service-cosmetic" data-service-detail aria-hidden="true">
+              <div class="service-detail-inner">
+                <img class="service-photo" src="assets/services/smile-design.jpg" alt=""
+                  data-i18n-attr="alt:service.cosmetic.photo" loading="lazy">
+              </div>
+            </div>
+          </article>
+
+          <article class="service-card" data-anim data-service>
+            <div class="service-main">
+              <span class="icon-badge">
+                <img class="service-svg-icon" src="assets/design.svg" alt="" aria-hidden="true">
+              </span>
+              <h3 class="heading" data-i18n="service.smile.title"></h3>
+              <p data-i18n="service.smile.body"></p>
+              <p class="service-more" data-i18n="service.smile.more"></p>
+              <button class="service-toggle" type="button" data-service-toggle
+                aria-expanded="false" aria-controls="service-smile"
+                data-i18n-attr="aria-label:service.expand">
+                <svg class="ui-icon" aria-hidden="true" focusable="false">
+                  <use href="#icon-chevron-end"></use>
+                </svg>
+              </button>
+            </div>
+            <div class="service-detail" id="service-smile" data-service-detail aria-hidden="true">
+              <div class="service-detail-inner">
+                <img class="service-photo" src="assets/detail-after.jpg" alt=""
+                  data-i18n-attr="alt:service.smile.photo" loading="lazy">
+              </div>
+            </div>
+          </article>
+
+          <article class="service-card" data-anim data-service>
+            <div class="service-main">
+              <span class="icon-badge">
+                <img class="service-svg-icon" src="assets/glow.svg" alt="" aria-hidden="true">
+              </span>
+              <h3 class="heading" data-i18n="service.whitening.title"></h3>
+              <p data-i18n="service.whitening.body"></p>
+              <p class="service-more" data-i18n="service.whitening.more"></p>
+              <button class="service-toggle" type="button" data-service-toggle
+                aria-expanded="false" aria-controls="service-whitening"
+                data-i18n-attr="aria-label:service.expand">
+                <svg class="ui-icon" aria-hidden="true" focusable="false">
+                  <use href="#icon-chevron-end"></use>
+                </svg>
+              </button>
+            </div>
+            <div class="service-detail" id="service-whitening" data-service-detail aria-hidden="true">
+              <div class="service-detail-inner">
+                <img class="service-photo" src="assets/services/whitening.jpg" alt=""
+                  data-i18n-attr="alt:service.whitening.photo" loading="lazy">
+              </div>
+            </div>
+          </article>
+
+          <article class="service-card" data-anim data-service>
+            <div class="service-main">
+              <span class="icon-badge">
+                <img class="service-svg-icon" src="assets/shine.svg" alt="" aria-hidden="true">
+              </span>
+              <h3 class="heading" data-i18n="service.veneers.title"></h3>
+              <p data-i18n="service.veneers.body"></p>
+              <p class="service-more" data-i18n="service.veneers.more"></p>
+              <button class="service-toggle" type="button" data-service-toggle
+                aria-expanded="false" aria-controls="service-veneers"
+                data-i18n-attr="aria-label:service.expand">
+                <svg class="ui-icon" aria-hidden="true" focusable="false">
+                  <use href="#icon-chevron-end"></use>
+                </svg>
+              </button>
+            </div>
+            <div class="service-detail" id="service-veneers" data-service-detail aria-hidden="true">
+              <div class="service-detail-inner">
+                <img class="service-photo" src="assets/services/veneers.jpg" alt=""
+                  data-i18n-attr="alt:service.veneers.photo" loading="lazy">
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2 class="heading section-title align-start" data-anim data-i18n="home.works.title"></h2>
+            <p class="section-lead align-start" data-anim data-i18n="home.works.lead"></p>
+          </div>
+          <a class="section-head-link" href="works.html" data-anim>
+            <span data-i18n="home.works.all"></span>
+            <span class="btn-arrow" aria-hidden="true"></span>
+          </a>
+        </div>
+
+        <div class="works-grid">
+          <article class="work-card" data-category="veneers" data-anim>
+            <div class="compare" style="--position:50%" data-compare>
+              <img class="compare-before" src="assets/cases/case-1-before.jpg" alt=""
+                data-i18n-attr="alt:case.1.altBefore" loading="lazy">
+              <div class="compare-after-wrap">
+                <img class="compare-after" src="assets/cases/case-1-after.jpg" alt=""
+                  data-i18n-attr="alt:case.1.altAfter" loading="lazy">
+              </div>
+              <span class="before" data-i18n="compare.before"></span>
+              <span class="after" data-i18n="compare.after"></span>
+              <button class="compare-handle" type="button" role="slider" aria-valuemin="0" aria-valuemax="100"
+                aria-valuenow="50" aria-orientation="horizontal" data-i18n-attr="aria-label:compare.aria">
+                <span class="compare-grip" aria-hidden="true">
+                  <span class="compare-step" data-step="after">
+                    <svg class="ui-icon" focusable="false"><use href="#icon-chevron-start"></use></svg>
+                  </span>
+                  <span class="compare-step" data-step="before">
+                    <svg class="ui-icon" focusable="false"><use href="#icon-chevron-end"></use></svg>
+                  </span>
+                </span>
+              </button>
+            </div>
+            <a class="work-card-link" href="details.html">
+              <div class="work-card-content">
+                <h3 class="heading" data-i18n="case.1.title"></h3>
+                <p data-i18n="case.1.desc"></p>
+              </div>
+            </a>
+          </article>
+
+          <article class="work-card" data-category="whitening" data-anim>
+            <div class="compare" style="--position:50%" data-compare>
+              <img class="compare-before" src="assets/cases/case-2-before.jpg" alt=""
+                data-i18n-attr="alt:case.2.altBefore" loading="lazy">
+              <div class="compare-after-wrap">
+                <img class="compare-after" src="assets/cases/case-2-after.jpg" alt=""
+                  data-i18n-attr="alt:case.2.altAfter" loading="lazy">
+              </div>
+              <span class="before" data-i18n="compare.before"></span>
+              <span class="after" data-i18n="compare.after"></span>
+              <button class="compare-handle" type="button" role="slider" aria-valuemin="0" aria-valuemax="100"
+                aria-valuenow="50" aria-orientation="horizontal" data-i18n-attr="aria-label:compare.aria">
+                <span class="compare-grip" aria-hidden="true">
+                  <span class="compare-step" data-step="after">
+                    <svg class="ui-icon" focusable="false"><use href="#icon-chevron-start"></use></svg>
+                  </span>
+                  <span class="compare-step" data-step="before">
+                    <svg class="ui-icon" focusable="false"><use href="#icon-chevron-end"></use></svg>
+                  </span>
+                </span>
+              </button>
+            </div>
+            <a class="work-card-link" href="details.html">
+              <div class="work-card-content">
+                <h3 class="heading" data-i18n="case.2.title"></h3>
+                <p data-i18n="case.2.desc"></p>
+              </div>
+            </a>
+          </article>
+
+          <article class="work-card" data-category="orthodontics" data-anim>
+            <div class="compare" style="--position:50%" data-compare>
+              <img class="compare-before" src="assets/cases/case-3-before.jpg" alt=""
+                data-i18n-attr="alt:case.3.altBefore" loading="lazy">
+              <div class="compare-after-wrap">
+                <img class="compare-after" src="assets/cases/case-3-after.jpg" alt=""
+                  data-i18n-attr="alt:case.3.altAfter" loading="lazy">
+              </div>
+              <span class="before" data-i18n="compare.before"></span>
+              <span class="after" data-i18n="compare.after"></span>
+              <button class="compare-handle" type="button" role="slider" aria-valuemin="0" aria-valuemax="100"
+                aria-valuenow="50" aria-orientation="horizontal" data-i18n-attr="aria-label:compare.aria">
+                <span class="compare-grip" aria-hidden="true">
+                  <span class="compare-step" data-step="after">
+                    <svg class="ui-icon" focusable="false"><use href="#icon-chevron-start"></use></svg>
+                  </span>
+                  <span class="compare-step" data-step="before">
+                    <svg class="ui-icon" focusable="false"><use href="#icon-chevron-end"></use></svg>
+                  </span>
+                </span>
+              </button>
+            </div>
+            <a class="work-card-link" href="details.html">
+              <div class="work-card-content">
+                <h3 class="heading" data-i18n="case.3.title"></h3>
+                <p data-i18n="case.3.desc"></p>
+              </div>
+            </a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container split-cta">
+        <article class="why">
+          <h2 class="heading" data-anim data-i18n="home.why.title"></h2>
+          <div class="why-item" data-anim>
+            <span class="icon-badge">
+              <img class="service-svg-icon" src="assets/tooth.svg" alt="" aria-hidden="true">
+            </span>
+            <div>
+              <strong data-i18n="why.experience.title"></strong>
+              <span data-i18n="why.experience.body"></span>
+            </div>
+          </div>
+          <div class="why-item" data-anim>
+            <span class="icon-badge">
+              <img class="service-svg-icon" src="assets/design.svg" alt="" aria-hidden="true">
+            </span>
+            <div>
+              <strong data-i18n="why.technology.title"></strong>
+              <span data-i18n="why.technology.body"></span>
+            </div>
+          </div>
+          <div class="why-item" data-anim>
+            <span class="icon-badge">
+              <img class="service-svg-icon" src="assets/glow.svg" alt="" aria-hidden="true">
+            </span>
+            <div>
+              <strong data-i18n="why.care.title"></strong>
+              <span data-i18n="why.care.body"></span>
+            </div>
+          </div>
+          <div class="why-item" data-anim>
+            <span class="icon-badge">
+              <img class="service-svg-icon" src="assets/shine.svg" alt="" aria-hidden="true">
+            </span>
+            <div>
+              <strong data-i18n="why.natural.title"></strong>
+              <span data-i18n="why.natural.body"></span>
+            </div>
+          </div>
+        </article>
+
+        <article class="cta-box" data-anim>
+          <span class="icon-badge">
+            <img class="service-svg-icon" src="assets/shine.svg" alt="" aria-hidden="true">
+          </span>
+          <h2 class="heading" data-i18n="home.cta.title"></h2>
+          <p data-i18n="home.cta.body"></p>
+          <a class="btn btn-glow" href="booking.html" data-i18n="home.cta.button"></a>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="js/icons.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/forms.js"></script>
+  <script src="js/slider.js"></script>
+  <script src="js/portfolio-filter.js"></script>
+  <script src="js/fields.js"></script>
+  <script src="js/case-modal.js"></script>
+  <script src="js/services.js"></script>
+  <script src="js/hero-slider.js"></script>
+  <script src="js/motion.js"></script>
+  <script src="js/reveal.js"></script>
+  <script src="js/scroll.js"></script>
+</body>
+
+</html>
